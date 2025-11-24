@@ -7,7 +7,7 @@ addLayer("p", {
 		points: new Decimal(0),
     }},
     color: "#039cd8ff",
-    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    requires: new Decimal(5), // Can be a function that takes requirement increases into account
     resource: "rebirth points", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
@@ -26,3 +26,10 @@ addLayer("p", {
     ],
     layerShown(){return true}
 })
+    upgrades: {
+        11: {
+    title: "Make this whatever you want!",
+    description: "Double your point gain.",
+    cost: new Decimal(1),
+        },
+    },
