@@ -7,6 +7,14 @@ addLayer("p", {
 		points: new Decimal(0),
     
     }},
+    upgrades: {
+    11: {
+        description: "Blah",
+        cost: new Decimal(100),
+        
+    },
+    
+},
     color: "#039cd8ff",
     requires: new Decimal(5), // Can be a function that takes requirement increases into account
     resource: "rebirth points", // Name of prestige currency
