@@ -5,6 +5,7 @@ addLayer("p", {
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
+    
     }},
     color: "#039cd8ff",
     requires: new Decimal(5), // Can be a function that takes requirement increases into account
@@ -16,6 +17,7 @@ addLayer("p", {
     gainMult() { // Calculate the multiplier for main currency from bonuses
         mult = new Decimal(1)
         return mult
+    
     },
     gainExp() { // Calculate the exponent on main currency from bonuses
         return new Decimal(1)
