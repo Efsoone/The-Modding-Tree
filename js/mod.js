@@ -18,7 +18,6 @@ let VERSION = {
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
-		- End Game: 2,500 RP<br>
 		- Added things.<br>
 		- Added stuff.`
 		
@@ -46,8 +45,9 @@ function getPointGen() {
 		
 		if (hasUpgrade("p", 13)) gain = gain.times(upgradeEffect("p", 13))
 		if (hasUpgrade("p", 21)) gain = gain.times(upgradeEffect("p", 21))
-
-
+		if (hasUpgrade("p", 23)) {
+        gain = gain.mul(upgradeEffect("p", 23))}
+		
 
 
 	return gain

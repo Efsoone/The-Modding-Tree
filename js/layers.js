@@ -24,28 +24,28 @@ addLayer("p", {
     12: {
       title: "2",
       description: "x2 RP again",
-      cost: new Decimal(5),
+      cost: new Decimal(5),//5
       effect() { return new Decimal(2) },
       unlocked() { return hasUpgrade("p", 11) },
     },
     13: {
       title: "3",
       description: "x3 Points",
-      cost: new Decimal(13),
+      cost: new Decimal(13),//13
       effect() { return new Decimal(3) },
       unlocked() { return hasUpgrade("p", 12) },
     },
     14: {
       title: "4",
       description: "x3 RP",
-      cost: new Decimal(50),
+      cost: new Decimal(50),//50
       effect() { return new Decimal(3) },
       unlocked() { return hasUpgrade("p", 13) },
     },
     15: {
       title: "5",
       description: "Points boost RP gain! Max:x10",
-      cost: new Decimal(200),
+      cost: new Decimal(200),//200
       effect() { return player.points.add(1).pow(0.25).min(10) },
       effectDisplay() { return "x" + format(upgradeEffect("p", 15)) },
       unlocked() { return hasUpgrade("p", 14) },
@@ -53,9 +53,53 @@ addLayer("p", {
     21: {
       title: "6",
       description: "x2 Points",
-      cost: new Decimal(1250),
+      cost: new Decimal(1000),//1000
       effect() { return new Decimal(2) },
       unlocked() { return hasUpgrade("p", 15) },
+    },
+    22: {
+      title: "7",
+      description: "x5 RP",
+      cost: new Decimal(2500),//2500
+      effect() { return new Decimal(5) },
+      unlocked() { return hasUpgrade("p", 21) },
+    },
+    23: {
+    title: "8",
+    description: "RP boost Points gain! Max:x3",
+    cost: new Decimal(15000),//15000
+    effect() {
+        let rp = player.p.points
+        let linear = new Decimal(0.00003)
+        let base = new Decimal(1).add(rp.mul(linear))
+        if (base.gt(3)) base = new Decimal(3)
+        return base
+    },
+    effectDisplay() { return "x" + format(upgradeEffect("p", 23)) },
+    unlocked() { return hasUpgrade("p", 22) }
+  },
+    24: {
+    title: "9",
+    description: "x2 RP again^2",
+    cost: new Decimal(25000),//?
+    effect() { return new Decimal(2) },
+    unlocked() { return hasUpgrade("p", 23) },
+  },
+    25: {
+      title: "10",
+      description: "Unlock New layer![(Very Coming Soon) x1k RP{Testing}]",
+      cost: new Decimal(100000),//?
+      effect() { return new Decimal(1000) },
+      unlocked() { return hasUpgrade("p", 24) },
+
+
+
+    
+
+    
+
+
+
 
 
     }},
@@ -65,9 +109,11 @@ addLayer("p", {
         if (hasUpgrade("p", 12)) mult = mult.times(upgradeEffect("p", 12))
         if (hasUpgrade("p", 14)) mult = mult.times(upgradeEffect("p", 14))
         if (hasUpgrade("p", 15)) mult = mult.times(upgradeEffect("p", 15))
+        if (hasUpgrade("p", 22)) mult = mult.times(upgradeEffect("p", 22))
+        if (hasUpgrade("p", 24)) mult = mult.times(upgradeEffect("p", 24))
+        if (hasUpgrade("p", 25)) mult = mult.times(upgradeEffect("p", 25))
         
-
-
+        
 
         return mult
     
@@ -80,4 +126,35 @@ addLayer("p", {
         {key: "r", description: "R: Reset for Rebirth points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
     layerShown(){return true}
+  })
+addLayer("a", {
+  name: "Achievements",
+    symbol: "A",
+    startData() { return { unlocked: true, points: new Decimal(0) } },
+    color: "#fbff00ff",
+    row: "side",       // bu layer sağ üstte görünecek
+    resource: "Achievements",
+    layerShown() { return true },
+  achievements: {
+  11: {
+    name: "Starting game!",
+    done() { return player.p.points.gte(1) },
+    tooltip: "Get First Rebirth!",
+  },
+  12: {
+    name: "You need faster!",
+    done() { return player.p.points.gte(100) },
+    tooltip: "Get 100 RP!",
+  },
+  13: {
+    name: "Prestige!",
+    done() { return player.p.points.gte(2e8) },
+    tooltip: "Get First Prestige!",
+  }}
+
+
+
+
+
+
 })
