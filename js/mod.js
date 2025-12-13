@@ -1,6 +1,6 @@
 let modInfo = {
-	name: "The ??? Tree",
-	author: "nobody",
+	name: "The Reborn Incremental",
+	author: "???",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
@@ -12,14 +12,28 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
-	name: "Literally nothing",
+	num: "0.0.2",
+	name: "Reborn the game!",
 }
 
-let changelog = `<h1>Changelog:</h1><br>
-	<h3>v0.0</h3><br>
-		- Added things.<br>
-		- Added stuff.`
+let changelog = `<h1>Changelog</h1><br>
+			<br>
+	<h2>v0.0</h2><br>
+		- Making the game.<br>
+			<br>
+	<h2>v0.0.1</h2><br>
+		- Fixing all layer.<br>
+		- Two new Upgrade!<br>
+			<br>
+	<h2>v0.0.2</h2><br>
+		- New Reborn reset.<br>
+		- Three new Upgrade!<br>
+		- Two upgrade nerfed!<br>
+			<br>
+	<h3>Endgame:<h3>4th Reborn!	
+		
+		
+		`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
@@ -40,8 +54,18 @@ function canGenPoints(){
 function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
+		let gain = new Decimal(1)
+		if (hasMilestone("r", 0)) {gain = gain.add(1)}
+		if (hasMilestone("r", 1)) {gain = gain.mul(1.5)}
+		if (hasMilestone("r", 3)) {gain = gain.mul(2)}
+		if (hasUpgrade("c", 12)) gain = gain.times(upgradeEffect("c", 12))
+		if (hasUpgrade("c", 14)) gain = gain.times(upgradeEffect("c", 14))
+		if (hasUpgrade("c", 15)) gain = gain.times(upgradeEffect("c", 15))
+		if (hasUpgrade("c", 22)) gain = gain.mul(upgradeEffect("c", 22))
+		if (hasUpgrade("c", 24)) gain = gain.times(upgradeEffect("c", 24))
+		if (hasUpgrade("c", 25)) gain = gain.times(upgradeEffect("c", 25))
 
-	let gain = new Decimal(1)
+
 	return gain
 }
 
