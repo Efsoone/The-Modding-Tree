@@ -1,6 +1,6 @@
 let modInfo = {
-	name: "The Long Tree",
-	author: "???",
+	name: "The ??? Tree",
+	author: "nobody",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
@@ -13,14 +13,14 @@ let modInfo = {
 // Set your version in num and name
 let VERSION = {
 	num: "0.0",
-	name: "Hi,starting the game.",
+	name: "Literally nothing",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
 		- Added things.<br>
 		- Added stuff.`
-		
+
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
 
 // If you add new functions anywhere inside of a layer, and those functions have an effect when called, add them here.
@@ -40,16 +40,8 @@ function canGenPoints(){
 function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
-		
+
 	let gain = new Decimal(1)
-		
-		if (hasUpgrade("p", 13)) gain = gain.times(upgradeEffect("p", 13))
-		if (hasUpgrade("p", 21)) gain = gain.times(upgradeEffect("p", 21))
-		if (hasUpgrade("p", 23)) {
-        gain = gain.mul(upgradeEffect("p", 23))}
-		
-
-
 	return gain
 }
 
