@@ -1,417 +1,301 @@
 addLayer("r", {
-    name: "Reborn",
-    symbol: "R",
-    position: 0,
+    name: "Rebirth", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "R", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
-        points: new Decimal(0),
+		points: new Decimal(0),
+        
     }},
-    color: "#368800ff",
+    color: "#005c79",
+    requires: new Decimal(10), // Can be a function that takes requirement increases into account
+    resource: "Rebirth points", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.5, // Prestige currency exponent
 
-    rebornReqs: [
-        new Decimal(5),
-        new Decimal(10),
-        new Decimal(500),
-        new Decimal(5e4),
-        new Decimal(5e8),
-        new Decimal(1.25e11),
-        new Decimal(5e1200),
-
-    ],
-
-    requires() {
-        let r = player.r.points.toNumber()
-        if (r >= this.rebornReqs.length) return new Decimal(Infinity)
-        return this.rebornReqs[r]
-    },
-
-    resource: "Reborn",
-    baseResource: "points",
-    baseAmount() { return player.points },
-
-    type: "static",
-    row: 0,
-
-    milestones: {
-        0: {
-            requirementDescription: "1th Reborn",
-            effectDescription: "+1 Points gain",
-            done() { return player.r.points.gte(1) }
-        },
-        1: {
-            requirementDescription: "2th Reborn",
-            effectDescription: "x1.5 Points gain, Unlock Cash Layer",
-            done() { return player.r.points.gte(2) },
-            unlocked() { return hasMilestone("r", 0) }
-        },
-        2: {
-            requirementDescription: "3th Reborn",
-            effectDescription: "x2 Cash gain,Two new Cash Upg!",
-            done() { return player.r.points.gte(3) },
-            unlocked() { return hasMilestone("r", 1) }
-        },
-        3: {
-            requirementDescription: "4th Reborn",
-            effectDescription: "x1.5→x3 Points gain,x2→x4 Cash gain,Three new Cash Upg!",
-            done() { return player.r.points.gte(4) },
-            unlocked() { return hasMilestone("r", 2) }
-        },
-        4: {
-            requirementDescription: "5th Reborn",
-            effectDescription: "Unlock Coins Layer!",
-            done() { return player.r.points.gte(5) },
-            unlocked() { return hasMilestone("r", 3) }
-        },
-        5: {
-            requirementDescription: "6th Reborn",
-            effectDescription: "%100 Cash/s, x3 Coins and Row 2 Coins Upg!",
-            done() { return player.r.points.gte(6) },
-            unlocked() { return hasMilestone("r", 4) }
-        },
-        6: {
-            requirementDescription: "7th Reborn",
-            effectDescription: "Coming Soon",
-            done() { return player.r.points.gte(7) },
-            unlocked() { return hasMilestone("r", 5) }
-        },
-
-
-
-
-
-
-
-
-      },
+    
 
     doReset(resettingLayer) {
-        if (resettingLayer !== this.layer) {
-            player.points = new Decimal(0)
-            
-        }
-    },
+    if (layers[resettingLayer].row > this.row) {
 
-    layerShown() { return true }
-}),
-addLayer("c", {
-    name: "Cash",
-    symbol: "$",
-    position: 1,
-    row: 1,
-    color: "#3cff00ff",
-    
-    branches: ["r"],
-    
-    startData() { return {
-        unlocked: true,
-        points: new Decimal(0),
-        upgrades: [],
+        let keep = []
+
+        // Prestige Upgrade 13 varsa Rebirth upgrade'lerini koru
+        if (hasUpgrade("p", 13)) {
+            keep.push("upgrades")
+        }
+        
+        layerDataReset("r", keep)
+
+        if (!player.r.upgrades.includes(25)) {
+            player.r.upgrades.push(25)}
     }},
 
-    resource: "Cash",
-    baseResource: "points",
-    baseAmount() { return player.points },
-
-    requires: new Decimal(10),
-    type: "normal",
-    exponent: 0.5,
-
-    
-
-
-
-    milestones: {
-        0: {
-            requirementDescription: "1e11 Cash",
-            effectDescription: "x^1.15 Cash Gain",
-            done() { return player.c.points.gte(1e11)},
-            unlocked() { return hasUpgrade("co", 14) }
-        },
-        1: {
-            requirementDescription: "1e12 Cash",
-            effectDescription: "x4 Coins Gain and x3 Cash Gain!",
-            done() { return player.c.points.gte(1e12)},
-            unlocked() { return hasMilestone("c", 0) }
-        },
-        
-
-
+    tabFormat: {
+    "Upgrades": {
+        content: [
+            "main-display",
+            "prestige-button",
+            ["display-text", () => `You have ${format(player.points)} points` ],
+            "blank",
+            "upgrades",
+        ]
     },
-
+    //"Milestones": {
+        //content: [
+            //"milestones"
+        //]
+    //}
+    },
+    
+    microtabs: {
+    stuff:{
+        "Upgrades": {
+        Upgrades: {
+            content: ["upgrades"]
+        }},
+        "Milestones": {
+            content: ["milestones"]
+        
+    }}},
 
     upgrades: {
     11: {
-      title: "Oh,First big boost!",
-      description: "x3 Cash",
-      cost: new Decimal(1),
-      effect() { return new Decimal(3) },
+    title: "Rebirth Upgrade 11!",
+    description: "x5 Points!",
+    cost: new Decimal(2),
+    effect() { return new Decimal(5) },
     },
     12: {
-      title: "Auxiliary Point",
-      description: "x2 Point",
-      cost: new Decimal(15),//15
-      effect() { return new Decimal(2) },
-      unlocked() { return hasUpgrade("c", 11) }
+    title: "Rebirth Upgrade 12!",
+    description: "x3 Rebirth Points!",
+    cost: new Decimal(20),
+    effect() { return new Decimal(3) },
+    unlocked() { return hasUpgrade("r", 11) }
     },
     13: {
-      title: "Go fast farming!",
-      description: "Point boost Cash gain!Max:x100",
-      cost: new Decimal(40),//40
-      effect() { return player.points.add(1).pow(0.55).min(100) },
-      effectDisplay() { return "x" + format(upgradeEffect("c", 13)) },
-      unlocked() { return hasUpgrade("c", 12) } 
-    },
-    14: {
-      title: "Yea!Keep it up.",
-      description: "x3 Point",
-      cost: new Decimal(333),
-      effect() { return new Decimal(3) },
-      unlocked() { return hasUpgrade("c", 13) }
-    },
-    15: {
-    title: "Omg,<br>Unbelievable!",
-    description: "Cash boost Point!But slower.",
-    cost: new Decimal(2500),
+    title: "Rebirth Upgrade 13!",
+    description: "Rebirth boost Points!",
+    cost: new Decimal(100),
     effect() {
-        let c = player.c.points
-        let linear = new Decimal(0.0001)
-        let base = new Decimal(1).add(c.mul(linear))
-        if (base.gt(1e5)) base = new Decimal(1e5)
+        let r = player.r.points
+        let linear = new Decimal(0.015)
+        let base = new Decimal(1).add(r.mul(linear))
+        if (base.gt(1e100)) base = new Decimal(1e100)
         return base
     },
-    effectDisplay() { return "x" + format(upgradeEffect("c", 15)) },
-    unlocked() { return hasUpgrade("c", 14) }
+    effectDisplay() { return "x" + format(upgradeEffect("r", 13)) },
+    unlocked() { return hasUpgrade("r", 12) }
+    },
+    14: {
+    title: "Rebirth Upgrade 14!",
+    description: "x4 Rebirth Points!",
+    cost: new Decimal(300),
+    effect() { return new Decimal(4) },
+    unlocked() { return hasUpgrade("r", 13) }
+    },
+    15: {
+    title: "Rebirth Upgrade 15!",
+    description: "Points boost Rebirth!",
+    cost: new Decimal(3000),
+    effect() { return player.points.add(1).pow(0.1).min(100) },
+    effectDisplay() { return "x" + format(upgradeEffect("r", 15)) },
+    unlocked() { return hasUpgrade("r", 14) }
     },
     21: {
-    title: "Deja vu?",
-    description: "x3 Cash",
-    cost: new Decimal(7500),
-    effect() {return new Decimal(3)},
-    unlocked() {return hasMilestone("r", 2) && hasUpgrade("c", 15)}
+    title: "Rebirth Upgrade 21!",
+    description: "x3 Points!",
+    cost: new Decimal(12500),
+    effect() { return new Decimal(3) },
+    unlocked() { return hasUpgrade("r", 15) }
     },
     22: {
-    title: "Slow down please. ;(",
-    description: "Cash Upg boost Point!",
-    cost: new Decimal(50000),
-    effect() {
-        let count = Object.keys(player.c.upgrades).length
-        let per = new Decimal(0.1)
-        return new Decimal(1).add(per.mul(count))
-    },
-    effectDisplay() {return "x" + format(this.effect())},
-    unlocked() {return hasMilestone("r", 2) && hasUpgrade("c", 21)}
+    title: "Rebirth Upgrade 22!",
+    description: "x^1.15 Rebirth Points!",
+    cost: new Decimal(100000),
+    effect() { return new Decimal(1.25) },
+    unlocked() { return hasUpgrade("r", 21) }
     },
     23: {
-    title: "Cash for Cash",
-    description: "Cash boost itself!",
-    cost: new Decimal(2.5e6),
-    effect() {return player.c.points.add(1).pow(0.07).min(1e100)},
-    effectDisplay() {return "x" + format(this.effect())},
-    unlocked() {return hasMilestone("r", 3) && hasUpgrade("c", 22)}
+    title: "Rebirth Upgrade 23!",
+    description: "x^1.05 Points!",
+    cost: new Decimal(5e7),
+    effect() { return new Decimal(1.05) },
+    unlocked() { return hasUpgrade("r", 22) }
     },
     24: {
-    title: "More more and more!",
-    description: "x3 Point",
-    cost: new Decimal(2.5e7),
-    effect() { return new Decimal(3)},
-    unlocked() {return hasMilestone("r", 3) && hasUpgrade("c", 23)}
+    title: "Rebirth Upgrade 24!",
+    description: "Rebirth boost itself!",
+    cost: new Decimal(1e9),
+    effect() {return player.r.points.add(1).pow(0.085).min(1e100)},
+    effectDisplay() {return "x" + format(this.effect())},
+    unlocked() { return hasUpgrade("r", 23) }
     },
     25: {
-    title: "Point for Point",
-    description: "Point boost itself!",
-    cost: new Decimal(1e8),
-    effect() {return player.points.add(1).pow(0.02).min(1e100)},
-    effectDisplay() {return "x" + format(this.effect())},
-    unlocked() {return hasMilestone("r", 3) && hasUpgrade("c", 24)}
-    },
-    16: {
-    title: "Chose(A)",
-    description: "x4 Cash and Points",
-    cost: new Decimal(2e14),
-    canAfford() { return !hasUpgrade("c", 26)},
-    effect() {return new Decimal(4)},
-    unlocked() {return hasMilestone("r", 5) && hasUpgrade("co", 22)}
-    },
-    26: {
-    title: "Chose(B)",
-    description: "x4 Coins",
-    cost: new Decimal(2e14),
-    canAfford() { return !hasUpgrade("c", 16)},
-    effect() {return new Decimal(4)},
-    unlocked() {return hasMilestone("r", 5) && hasUpgrade("co", 22)}
+    title: "Rebirth Upgrade 25!",
+    description: "Unlock new Layer!<br>and<br>x2 Rebirth!(Permament!)",
+    cost: new Decimal(1e14),
+    effect() { return new Decimal(2) },
+    unlocked() { return hasUpgrade("r", 24) },
     },
 
 
 
+},
 
 
 
-
-  
-  
-  
-  
-  },
-    gainMult() {
+    gainMult() { // Calculate the multiplier for main currency from bonuses
         let mult = new Decimal(1)
-        if (hasMilestone("r", 2)) {mult = mult.mul(2)}
-        if (hasMilestone("r", 3)) {mult = mult.mul(2)}
-        if (hasMilestone("c", 1)) {mult = mult.mul(3)}
-        if (hasUpgrade("c", 11)) mult = mult.times(upgradeEffect("c", 11))
-        if (hasUpgrade("c", 13)) mult = mult.times(upgradeEffect("c", 13))
-        if (hasUpgrade("c", 21)) mult = mult.times(upgradeEffect("c", 21))
-        if (hasUpgrade("c", 23)) mult = mult.mul(upgradeEffect("c", 23))
-        if (hasUpgrade("c", 16)) mult = mult.times(upgradeEffect("c", 16))
-        if (hasMilestone("c", 0)) mult = mult.pow(1.15)
-        if (hasUpgrade("co", 11)) mult = mult.mul(upgradeEffect("co", 11))
-        if (hasUpgrade("co", 14)) mult = mult.mul(upgradeEffect("co", 14))
-        if (hasUpgrade("co", 24)) mult = mult.mul(upgradeEffect("co", 24))
+        mult = mult.times(new Decimal(1).add(player.p.points.times(0.05)))
+        if (hasMilestone("p", 0)) {mult = mult.mul(4)}
+        if (hasUpgrade("r", 12)) mult = mult.times(upgradeEffect("r", 12))
+        if (hasUpgrade("r", 14)) mult = mult.times(upgradeEffect("r", 14))
+        if (hasUpgrade("r", 15)) mult = mult.times(upgradeEffect("r", 15))
+        if (hasUpgrade("r", 24)) mult = mult.times(upgradeEffect("r", 24))
+        if (hasUpgrade("r", 25)) mult = mult.times(upgradeEffect("r", 25))
+        if (hasUpgrade("p", 11)) mult = mult.times(upgradeEffect("p", 11))
+        if (hasUpgrade("p", 14)) mult = mult.times(upgradeEffect("p", 14))
 
 
 
         return mult
     },
+    gainExp() { // Calculate the exponent on main currency from bonuses
+        let exp = new Decimal(1)
+        if (hasUpgrade("r", 22)) exp = exp.mul(upgradeEffect("r", 22))
 
-    gainExp() {
-        return new Decimal(1)
+
+        return exp
     },
-
-    passiveGeneration() {
-    if (hasMilestone("r", 5)) return 1
-    return 0
-    },
-
+    row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {
-            key: "c",
-            description: "C: Reset for Cash",
-            onPress() {
-                if (canReset("c")) doReset("c")
-            }
-        }
+        {key: "r", description: "R: Reset for Rebirth Points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-
-    layerShown() {
-        return hasMilestone("r", 1)
-    }
-})
-addLayer("co", {
-    name: "Coins",
-    symbol: "C",
-    position: 1,
-    row: 1,
-    color: "#ffee00ff",
-    
-    branches: ["r"],
-    
+    layerShown(){return true}
+}),
+addLayer("p", {
+    name: "Prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
-        points: new Decimal(0),
+		points: new Decimal(0),
+        
     }},
+    color: "#008854",
+    branches: ["r"],
+    requires: new Decimal(1e15), // Can be a function that takes requirement increases into account
+    resource: "Prestige points", // Name of prestige currency
+    baseResource: "Rebirth points", // Name of resource prestige is based on
+    baseAmount() {return player.r.points}, // Get the current amount of baseResource
+    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0.06, // Prestige currency exponent
 
-    resource: "Coins",
-    baseResource: "Cash",
-    baseAmount() { return player.c.points },
 
-    requires: new Decimal(8e8),
-    type: "normal",
-    exponent: 0.25,
+    tabFormat: {
+    "Upgrades": {
+        content: [
+            "main-display",
+            "prestige-button",
+            ["display-text", () => `You have ${format(player.r.points)} Rebirth points`],
+            "blank",
+            "upgrades",
+        ]
+    },
+    "Milestones": {
+           content: [
+            "main-display",
+            "prestige-button",
+            ["display-text", () => `You have ${format(player.r.points)} Rebirth points`],
+            "blank",
+            "milestones",
+        ]
+    }
+    },
 
-    
+    microtabs: {
+    stuff:{
+        "Upgrades": {
+        Upgrades: {
+            content: ["upgrades"]
+        }},
+        "Milestones": {
+            content: ["milestones"]
+        
+    }}},
 
-    upgrades:{
+    milestones: {
+        0: {
+            requirementDescription: "1 Prestige",
+            effectDescription: "x4 Rebirth points! ",
+            done() { return player.p.points.gte(1) }
+        },
+        1: {
+            requirementDescription: "2 Prestige",
+            effectDescription() {
+            return `Prestige boost Rebirth Gain! Current: x${format(this.effect())}` },
+            effect() {return new Decimal(1).add(player.p.points.times(0.01))},
+            done() { return player.p.points.gte(2) }
+        },
+        2: {
+            requirementDescription: "5 Prestige",
+            effectDescription: "x5 Points!",
+            done() { return player.p.points.gte(5) }
+        },
+        3: {
+            requirementDescription: "20 Prestige",
+            effectDescription: "x2.5 Prestige Points!",
+            done() { return player.p.points.gte(20) }
+        },
+        4: {
+            requirementDescription: "100 Prestige",
+            effectDescription: "Unlock Prestige Upgrades!",
+            done() { return player.p.points.gte(100) }
+        }
+
+
+    },
+
+    upgrades: {
     11: {
-    title: "You reach?",
-    description: "x3 Cash",
-    cost: new Decimal(10),
+    title: "Prestige Upgrade 11!",
+    description: "x3 All Stats!",
+    cost: new Decimal(100),
     effect() { return new Decimal(3) },
+    unlocked() {return hasMilestone("p", 4)}
     },
     12: {
-    title: "Soo boring! :/",
-    description: "x2 Coins",
-    cost: new Decimal(15),
-    effect() { return new Decimal(2) },
-    unlocked() { return hasUpgrade("co", 11) }
+    title: "Prestige Upgrade 12!",
+    description: "Points boost little Prestige!",
+    cost: new Decimal(200),
+    effect() { return player.points.add(1).pow(0.008).min(100) },
+    effectDisplay() { return "x" + format(upgradeEffect("p", 12)) },
+    unlocked() {return player.p.points.gte(200) || hasUpgrade("p", 12)}
+    //unlocked() {return hasMilestone("p", 4)}
     },
     13: {
-    title: "How to buying?",
-    description: "Point boost Coins!",
-    cost: new Decimal(75),
-    effect() { return player.points.add(1).pow(0.2).min(250) },
-    effectDisplay() { return "x" + format(upgradeEffect("co", 13)) },
-    unlocked() { return hasUpgrade("co", 12) }
+    title: "Prestige Upgrade 13!",
+    description: "Keep Rebirth Upgrades!",
+    cost: new Decimal(1000),
+    unlocked() {return player.p.points.gte(1000) || hasUpgrade("p", 13)}
     },
     14: {
-    title: "Easy cash ;)",
-    description: "Coins boost cash!",
-    cost: new Decimal(1000),
-    effect() {
-        let c = player.co.points
-        let linear = new Decimal(0.001)
-        let base = new Decimal(1).add(c.mul(linear))
-        if (base.gt(100)) base = new Decimal(100)
-        return base
-    },
-    effectDisplay() { return "x" + format(upgradeEffect("co", 14)) },
-    unlocked() { return hasUpgrade("co", 13) }
-    },
+    title: "Prestige Upgrade 14!",
+    description: "xe5 Rebirth Points!",
+    cost: new Decimal(2500),
+    effect() { return new Decimal(1e5) },
+    unlocked() {return player.p.points.gte(2500) || hasUpgrade("p", 14)}
+    }, 
     15: {
-    title: "Start coins farm!",
-    description: "Coins boost point! Slower",
-    cost: new Decimal(10000),
-    effect() {
-        let c = player.co.points
-        let linear = new Decimal(0.00075)
-        let base = new Decimal(1).add(c.mul(linear))
-        if (base.gt(100)) base = new Decimal(100)
-        return base
+    title: "Prestige Upgrade 15!",
+    description: "Unlock Challenges!<br>Soon?",
+    cost: new Decimal(Infinity),
+    effect() { return new Decimal(1e5) },
+    unlocked() {return player.p.points.gte(1e6) || hasUpgrade("p", 15)}
     },
-    effectDisplay() { return "x" + format(upgradeEffect("co", 15)) },
-    unlocked() {return hasMilestone("c", 1)}
-    },
-    21: {
-    title: "High Boost!",
-    description: "x^1.25 Coins",
-    cost: new Decimal(1e6),
-    effect() { return new Decimal(1.25) },
-    unlocked() {return hasMilestone("r", 5) && hasUpgrade("co", 15)}
-    },
-    22: {
-    title: "Find Secrets<br> Upg!",
-    description: "Unlock two cash Upg!",
-    cost: new Decimal(7.5e6),
-    unlocked() {return hasMilestone("r", 5) && hasUpgrade("co", 21)}
-    },
-    23: {
-    title: "Coins for Coins",
-    description: "Coins boost itself",
-    cost: new Decimal(3e7),
-    effect() {return player.co.points.add(1).pow(0.1).min(1e100)},
-    effectDisplay() {return "x" + format(this.effect())},
-    unlocked() {return hasMilestone("r", 5) && hasUpgrade("co", 22)}
-    },
-    24: {
-    title: "CC",
-    description: "x2.5 Coins and Cash",
-    cost: new Decimal(1.5e8),
-    effect() { return new Decimal(2.5) },
-    unlocked() { return hasUpgrade("co", 23) }
-    },
-    25: {
-    title: "",
-    description: "Coins boost Point!<br>Very slower",
-    cost: new Decimal(1e9),
-    effect() {
-        let c = player.co.points
-        let linear = new Decimal(0.00000000125)
-        let base = new Decimal(1).add(c.mul(linear))
-        if (base.gt(1e4)) base = new Decimal(1e4)
-        return base
-    },
-    effectDisplay() { return "x" + format(upgradeEffect("co", 25)) },
-    unlocked() { return hasUpgrade("co", 24) }
-    },
-
 
 
 
@@ -420,46 +304,26 @@ addLayer("co", {
 
     },
 
-    gainMult() {
+
+    gainMult() { // Calculate the multiplier for main currency from bonuses
         let mult = new Decimal(1)
-        if (hasMilestone("c", 1)) {mult = mult.mul(4)}
-        if (hasMilestone("r", 5)) {mult = mult.mul(3)}
-        if (hasUpgrade("c", 26)) mult = mult.times(upgradeEffect("c", 26))
-        if (hasUpgrade("co", 12)) mult = mult.mul(upgradeEffect("co", 12))
-        if (hasUpgrade("co", 13)) mult = mult.mul(upgradeEffect("co", 13))
-        if (hasUpgrade("co", 23)) mult = mult.mul(upgradeEffect("co", 23))
-        if (hasUpgrade("co", 24)) mult = mult.mul(upgradeEffect("co", 24))
-
+        if (hasMilestone("p", 3)) {mult = mult.mul(2.5)}
+        if (hasUpgrade("p", 11)) mult = mult.times(upgradeEffect("p", 11))
+        if (hasUpgrade("p", 12)) mult = mult.times(upgradeEffect("p", 12))
 
 
 
 
         return mult
     },
-
-    gainExp() {
+    gainExp() { // Calculate the exponent on main currency from bonuses
         let exp = new Decimal(1)
-        if (hasUpgrade("co", 21)) exp = exp.mul(upgradeEffect("co", 21))
 
-        return exp  
+        return exp
     },
-
+    row: 1, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-    {
-        key: "o",
-        description: "O: Reset for Coins",
-        onPress() {
-            if (canReset("co")) doReset("co")
-            }
-        }
+        {key: "p", description: "P: Reset for Prestige Points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-
-    doReset(resettingLayer) {
-    if (resettingLayer === this.layer) {
-        player.c.points = new Decimal(0)
-    }},
-
-    layerShown() {
-        return hasMilestone("r", 4)
-    }
+    layerShown(){return hasUpgrade("r", 25)}
 })
