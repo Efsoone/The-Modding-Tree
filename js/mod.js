@@ -12,14 +12,17 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0",
+	num: "0.0.5",
 	name: "First Era!",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
 		- Two new layer!<br>
-		
+			<br>
+	<h3>v0.0.5</h3><br>
+		- Mini Update!<br>
+
 		`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -47,9 +50,13 @@ function getPointGen() {
 		if (hasUpgrade("r", 13)) gain = gain.times(upgradeEffect("r", 13))
 		if (hasUpgrade("r", 21)) gain = gain.times(upgradeEffect("r", 21))
 		if (hasUpgrade("p", 11)) gain = gain.times(upgradeEffect("p", 11))
+		if (hasUpgrade("p", 21)) gain = gain.times(upgradeEffect("p", 21))
+
 
 		if (hasUpgrade("r", 23)) gain = gain.pow(1.05)
+		
 
+		if (inChallenge("p", 12)) {gain = gain.pow(0.25)}
 
 
 	return gain
