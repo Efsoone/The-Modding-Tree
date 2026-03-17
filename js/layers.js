@@ -188,6 +188,9 @@ addLayer("p", {
     name: "Prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    effect() {return new Decimal(1).add(player.p.points.times(0.08))},
+    effectDescription(){return "which boost rebirth gain by x" + format(tmp.p.effect) + "";},
+    
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
@@ -251,34 +254,27 @@ addLayer("p", {
             done() { return player.p.points.gte(1) }
         },
         1: {
-            requirementDescription: "2 Prestige",
-            effectDescription() {
-            return `Prestige boost Rebirth Gain! Current: x${format(this.effect())}` },
-            effect() {return new Decimal(1).add(player.p.points.times(0.01))},
-            done() { return player.p.points.gte(2) }
-        },
-        2: {
             requirementDescription: "5 Prestige",
             effectDescription: "x5 Points!",
             done() { return player.p.points.gte(5) }
         },
-        3: {
+        2: {
             requirementDescription: "20 Prestige",
             effectDescription: "x2.5 Prestige Points!",
             done() { return player.p.points.gte(20) }
         },
-        4: {
+        3: {
             requirementDescription: "100 Prestige",
             effectDescription: "Unlock Prestige Upgrades!",
             done() { return player.p.points.gte(100) }
         },
-        5: {
+        4: {
             requirementDescription: "10,000,000 Prestige",
             effectDescription: "%100 Rebirth Gain!",
             done() { return player.p.points.gte(1e7) },
             unlocked() {return hasChallenge("p", 11)}
         },
-        6: {
+        5: {
             requirementDescription: "1e9 Prestige",
             effectDescription: "x^1.075 Rebirth Gain!",
             done() { return player.p.points.gte(1e9) },
@@ -311,15 +307,15 @@ addLayer("p", {
         // Nerf Name
         challengeDescription() {return "Nerf: ^0.25 Points, ^0.8 Rebirth"},
         // 🎯 GOAL
-        goalDescription: "Reach 5e10 Points",
+        goalDescription: "Reach 1e11 Points",
         // 🎁 REWARD
         rewardDescription: "Unlock New layer(Soon) and x10 Prestige Gain!",
         // Challenge'a girince reset
         onEnter() {player.points = new Decimal(0)
         player.r.points = new Decimal(0)},
         // Bitirme şartı
-        done() {return player.points.gte(new Decimal(5e10))},
-        canComplete() {return player.points.gte(new Decimal(5e10))},
+        done() {return player.points.gte(new Decimal(1e11))},
+        canComplete() {return player.points.gte(new Decimal(1e11))},
         unlocked() { return hasUpgrade("p", 25) },
     },
     },
@@ -437,23 +433,32 @@ addLayer("p", {
     ],
     layerShown(){return hasUpgrade("r", 25)}
 }),
-addLayer("e", {
-    name: "Energy", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "E", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+addLayer("m", {
+    name: "Mega", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "M", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
         
     }},
-    color: "#cc9600",
-    branches: ["r"],
-    requires: new Decimal(Infinity), // Can be a function that takes requirement increases into account
-    resource: "Energy", // Name of prestige currency
-    baseResource: "Rebirth points", // Name of resource prestige is based on
-    baseAmount() {return player.r.points}, // Get the current amount of baseResource
+    color: "#db0025",
+    branches: ["p"],
+    requires: new Decimal(Infinity), //5e11 // Can be a function that takes requirement increases into account
+    resource: "Mega points", // Name of prestige currency
+    baseResource: "Prestige points", // Name of resource prestige is based on
+    baseAmount() {return player.p.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.06, // Prestige currency exponent
+    exponent: 0.3, // Prestige currency exponent
+
+
+    upgrades: {
+    11: {
+    title: "Mega Upgrade 11!",
+    description: "x100 All Stats!",
+    cost: new Decimal(1e9),
+    effect() { return new Decimal(100) },
+    }},
 
     gainMult() { // Calculate the multiplier for main currency from bonuses
         let mult = new Decimal(1)
@@ -473,7 +478,7 @@ addLayer("e", {
     
     return true
     },
-    row: 1, // Row the layer is in on the tree (0 is the first row)
+    row: 2, // Row the layer is in on the tree (0 is the first row)
     //hotkeys: [
         //{key: "e", description: "?: Reset for ?", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     //],
