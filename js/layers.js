@@ -16,7 +16,8 @@ addLayer("r", {
     exponent: 0.5, // Prestige currency exponent
 
     passiveGeneration() {
-    if (hasMilestone("p", 5)) return 1
+    if (hasMilestone("p", 4)) return 2
+    if (hasMilestone("m", 1)) return 1
     return 0
     },
 
@@ -29,11 +30,12 @@ addLayer("r", {
         if (hasUpgrade("p", 13)) {
             keep.push("upgrades")
         }
-        
+        if (hasMilestone("m", 1)) {
+            keep.push("upgrades")
+        }
+
         layerDataReset("r", keep)
 
-        if (!player.r.upgrades.includes(25)) {
-            player.r.upgrades.push(25)}
     }},
 
     tabFormat: {
@@ -138,9 +140,9 @@ addLayer("r", {
     },
     25: {
     title: "Rebirth Upgrade 25!",
-    description: "Unlock new Layer!<br>and<br>x2 Rebirth!(Permament!)",
+    description: "Unlock new Layer!<br>and<br>x3 Rebirth!",
     cost: new Decimal(1e14),
-    effect() { return new Decimal(2) },
+    effect() { return new Decimal(3) },
     unlocked() { return hasUpgrade("r", 24) },
     },
 
@@ -154,6 +156,7 @@ addLayer("r", {
         let mult = new Decimal(1)
         mult = mult.times(new Decimal(1).add(player.p.points.times(0.05)))
         if (hasMilestone("p", 0)) {mult = mult.mul(4)}
+        if (hasMilestone("m", 0)) {mult = mult.mul(100)}
         if (hasUpgrade("r", 12)) mult = mult.times(upgradeEffect("r", 12))
         if (hasUpgrade("r", 14)) mult = mult.times(upgradeEffect("r", 14))
         if (hasUpgrade("r", 15)) mult = mult.times(upgradeEffect("r", 15))
@@ -188,7 +191,7 @@ addLayer("p", {
     name: "Prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    effect() {return new Decimal(1).add(player.p.points.times(0.08))},
+    effect(){return new Decimal(1).add(player.p.points.times(0.08))},
     effectDescription(){return "which boost rebirth gain by x" + format(tmp.p.effect) + "";},
     
     startData() { return {
@@ -326,7 +329,7 @@ addLayer("p", {
     description: "x3 All Stats!",
     cost: new Decimal(100),
     effect() { return new Decimal(3) },
-    unlocked() {return hasMilestone("p", 4)}
+    unlocked() {return hasMilestone("p", 3)}
     },
     12: {
     title: "Prestige Upgrade 12!",
@@ -387,10 +390,10 @@ addLayer("p", {
     24: {
     title: "Prestige Upgrade 24!",
     description: "Prestige boost itself!",
-    cost: new Decimal(2e10),
+    cost: new Decimal(1.5e10),
     effect() {return player.p.points.add(1).pow(0.05).min(1e100)},
     effectDisplay() {return "x" + format(this.effect())},
-    unlocked() {return player.p.points.gte(2e10) || hasUpgrade("p", 24)}
+    unlocked() {return player.p.points.gte(1.5e10) || hasUpgrade("p", 24)}
     },
     25: {
     title: "Prestige Upgrade 25!",
@@ -407,6 +410,7 @@ addLayer("p", {
     gainMult() { // Calculate the multiplier for main currency from bonuses
         let mult = new Decimal(1)
         if (hasMilestone("p", 3)) {mult = mult.mul(2.5)}
+        if (hasMilestone("m", 0)) {mult = mult.mul(2.5)}
         if (hasUpgrade("p", 11)) mult = mult.times(upgradeEffect("p", 11))
         if (hasUpgrade("p", 12)) mult = mult.times(upgradeEffect("p", 12))
         if (hasUpgrade("p", 22)) mult = mult.times(upgradeEffect("p", 22))
@@ -431,12 +435,15 @@ addLayer("p", {
     hotkeys: [
         {key: "p", description: "P: Reset for Prestige Points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return hasUpgrade("r", 25)}
+    layerShown(){return hasUpgrade("r", 25) || player[this.layer].unlocked}
 }),
 addLayer("m", {
     name: "Mega", // This is optional, only used in a few places, If absent it just uses the layer id.
     symbol: "M", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
+    effect(){return new Decimal(1).add(player.m.points.times(0.25))},
+    effectDescription(){return "which boost prestige gain by x" + format(tmp.m.effect) + "";},
+    
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
@@ -449,15 +456,70 @@ addLayer("m", {
     baseResource: "Prestige points", // Name of resource prestige is based on
     baseAmount() {return player.p.points}, // Get the current amount of baseResource
     type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.3, // Prestige currency exponent
+    exponent: 0.2, // Prestige currency exponent
+
+    tabFormat: {
+    "Upgrades": {
+        content: [
+            "main-display",
+            "prestige-button",
+            ["display-text", () => `You have ${format(player.p.points)} Prestige points`],
+            "blank",
+            "upgrades",
+        ]
+    },
+    "Milestones": {
+           content: [
+            "main-display",
+            "prestige-button",
+            ["display-text", () => `You have ${format(player.p.points)} Prestige points`],
+            "blank",
+            "milestones",
+        ]
+    },
 
 
+
+},
+
+    microtabs: {
+    stuff:{
+        "Upgrades": {
+        Upgrades: {
+            content: ["upgrades"]
+        }},
+        "Milestones": {
+            content: ["milestones"]
+        },
+        "Challenges": {
+            content: ["challenges"]
+    }}},
+
+    milestones: {
+        0: {
+            requirementDescription: "1 Mega Points",
+            effectDescription: "x100 Rebirth, x2.5 Prestige Gain",
+            done() { return player.m.points.gte(1) }
+        },
+        1: {
+            requirementDescription: "4 Mega Points",
+            effectDescription: "Keep Rebirth Layer",
+            done() { return player.m.points.gte(4) },
+            unlocked() { return hasMilestone("m", 0) }
+        },
+    
+    },
+    
+    
+    
+    
     upgrades: {
     11: {
     title: "Mega Upgrade 11!",
-    description: "x100 All Stats!",
+    description: "xInfinity All Stats!",
     cost: new Decimal(1e9),
     effect() { return new Decimal(100) },
+    unlocked(){return false}
     }},
 
     gainMult() { // Calculate the multiplier for main currency from bonuses
@@ -483,5 +545,5 @@ addLayer("m", {
         //{key: "e", description: "?: Reset for ?", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     //],
     layerShown(){return false}
-    //layerShown(){return hasChallenge("p", 12)}
+    //layerShown(){return hasChallenge("p", 12) || player[this.layer].unlocked}
 })
