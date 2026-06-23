@@ -1,549 +1,309 @@
 addLayer("r", {
-    name: "Rebirth", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "R", // This appears on the layer's node. Default is the id with the first letter capitalized
+    name: "Runes",
+    symbol: "R", // Katman düğümünde görünecek harf
+    position: 0, 
+    startData() { return {
+        unlocked: false, // Başlangıçta kilitli olacak
+        points: new Decimal(0), // İleride rün puanları veya parçacıkları için kullanılabilir
+    }},
+    // Fallback renk (CSS yüklenene kadar görünecek düz renk)
+    color: "#3d3d3d", 
+
+    // --- RENK GEÇİŞİ (GRADIENT) EKLEME ALANI ---
+    nodeStyle() {
+        return {
+            // Siyah (#000000) renginden yavaşça beyaza (#ffffff) geçiş (Animasyonsuz)
+            background: "linear-gradient(135deg, #000000 0%, #ffffff 100%)",
+            // Yazının (R harfinin) siyah-beyaz arka planda okunabilmesi için zıt renk (Örn: Gri/Gümüş)
+            color: "#3d3d3d",
+            // İstersen butonun dış çerçevesine de şık bir gri tonu verebilirsin
+            "border-color": "#272727"
+        }
+    }, // Rün sistemine yakışacak efsanevi bir mor/indigo tonu
+    
+    // --- KİLİT AÇMA ŞARTLARI ---
+    requires: new Decimal(8e5), // 80k Energy gereksinimi
+    resource: "Rune Shards", 
+    baseResource: "Energy", // Kilit açmak için harcanacak/bakılacak kaynak
+    baseAmount() { return player.e.points }, // Energy katmanındaki puanları kontrol eder
+    
+    type: "none", // Mekanikleri tamamen kendimiz yazacağımız için yine "none" tutuyoruz
+    row: "side",  // İŞTE BURASI! Katmanı sol/sağ menüde bir yan katman (Side Layer) yapar.
+
+    // --- RÜN KAYNAKLARI VE İSTATİSTİKLERİ ---
+    RuneShards: new Decimal(0),
+
+    layout: [
+        "main-display",
+        "blank",
+        "upgrades" // İleride buraya Roblox tarzı zarlar, rünler ve butonlar gelecek
+    ],
+
+    tabFormat: {
+    "Main": {
+        content: [
+            "main-display",
+            "blank",
+            "upgrades",
+        ]
+    },
+    "Stats": {
+           content: [
+            "main-display",
+            "blank",
+            ["display-text", function() {
+                return `
+                    <div style="
+                        border: 2px solid #ffffff !important; 
+                        padding: 20px !important; 
+                        border-radius: 6px !important; 
+                        background-color: rgba(0, 0, 0, 0.5) !important; 
+                        min-width: 320px !important; 
+                        display: inline-block !important; 
+                        text-align: left !important;
+                    ">
+                        <h3 style="margin-top: 0; text-align: center; color: #ffffff !important;">Rune Statistics</h3>
+                        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.3); margin-bottom: 15px;">
+                        
+                        <span style="color: #bbbbbb; display: block; text-align: center;">Loading...</span>
+                    </div>
+                `;
+            }],
+        ]
+    }},
+    microtabs: {
+    stuff:{
+        "Main": {
+        Upgrades: {
+            content: ["upgrades"]
+        }},
+        "Stats": {
+            content: [""]
+        }}},
+
+
+
+
+    // Katmanın görünme şartı: Oyuncu Tier 3'e ulaştığında bu yan katman satın alınabilir olarak belirecek
+    layerShown() { 
+        return player.t.points.gte(3); 
+    },
+
+    update(diff) {
+        if (player.t.points.gte(3) && player.e.points.gte(80000)) {
+            player.r.unlocked = true;
+        }
+        
+    },
+}),
+addLayer("t", {
+    name: "Tier", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "T", // This appears on the layer's node. Default is the id with the first letter capitalized
     position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
         
     }},
-    color: "#005c79",
+    color: "#d3d3d3",
     requires: new Decimal(10), // Can be a function that takes requirement increases into account
-    resource: "Rebirth points", // Name of prestige currency
+    resource: "Tier", // Name of prestige currency
     baseResource: "points", // Name of resource prestige is based on
     baseAmount() {return player.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.5, // Prestige currency exponent
+    type: "static", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 1,// Prestige currency exponent
+    doReset(resettingLayer) {},
 
-    passiveGeneration() {
-    if (hasMilestone("p", 4)) return 2
-    if (hasMilestone("m", 1)) return 1
-    return 0
+    getNextAt() {
+        let level = player.t.points.toNumber(); // Mevcut Tier seviyen
+
+        if (level === 0) return new Decimal(10);   // Tier 0 -> 1 
+        if (level === 1) return new Decimal(90);   // Tier 1 -> 2 
+        if (level === 2) return new Decimal(1e5);  // Tier 2 -> 3 
+        if (level === 3) return new Decimal(Infinity); // Tier 3 -> 4
+        
+        return new Decimal(1e9);
     },
 
-    doReset(resettingLayer) {
-    if (layers[resettingLayer].row > this.row) {
+    onPrestige(pointsGained) {
+    // 1. Ana Puanları (Points) sıfırla
+    player.points = new Decimal(0);
 
-        let keep = []
+    // 2. Energy katmanının biriken puanlarını sıfırla
+    player.e.points = new Decimal(0);
 
-        // Prestige Upgrade 13 varsa Rebirth upgrade'lerini koru
-        if (hasUpgrade("p", 13)) {
-            keep.push("upgrades")
-        }
-        if (hasMilestone("m", 1)) {
-            keep.push("upgrades")
-        }
-
-        layerDataReset("r", keep)
-
-    }},
-
-    tabFormat: {
-    "Upgrades": {
-        content: [
-            "main-display",
-            "prestige-button",
-            ["display-text", () => `You have ${format(player.points)} points` ],
-            "blank",
-            "upgrades",
-        ]
-    },
-    //"Milestones": {
-        //content: [
-            //"milestones"
-        //]
-    //}
+    // 4. Energy katmanındaki tüm upgrade satın alımlarını temizle
+    // player.e.upgrades dizisindeki tüm ID'leri sıfırlıyoruz
+    player.e.upgrades = [];
+    
+    // NOT: Eğer TMT'nin kendi otomatik sıfırlama sistemini de arkadan tetiklemek istersen
+    // itg (row resets) kuralları geçerlidir ama bu el ile yazım en kesin ve hatasız çözümdür.
     },
     
-    microtabs: {
-    stuff:{
-        "Upgrades": {
-        Upgrades: {
-            content: ["upgrades"]
-        }},
-        "Milestones": {
-            content: ["milestones"]
-        
-    }}},
-
-    upgrades: {
-    11: {
-    title: "Rebirth Upgrade 11!",
-    description: "x5 Points!",
-    cost: new Decimal(2),
-    effect() { return new Decimal(5) },
-    },
-    12: {
-    title: "Rebirth Upgrade 12!",
-    description: "x3 Rebirth Points!",
-    cost: new Decimal(20),
-    effect() { return new Decimal(3) },
-    unlocked() { return hasUpgrade("r", 11) }
-    },
-    13: {
-    title: "Rebirth Upgrade 13!",
-    description: "Rebirth boost Points!",
-    cost: new Decimal(100),
-    effect() {
-        let r = player.r.points
-        let linear = new Decimal(0.015)
-        let base = new Decimal(1).add(r.mul(linear))
-        if (base.gt(1e100)) base = new Decimal(1e100)
-        return base
-    },
-    effectDisplay() { return "x" + format(upgradeEffect("r", 13)) },
-    unlocked() { return hasUpgrade("r", 12) }
-    },
-    14: {
-    title: "Rebirth Upgrade 14!",
-    description: "x4 Rebirth Points!",
-    cost: new Decimal(300),
-    effect() { return new Decimal(4) },
-    unlocked() { return hasUpgrade("r", 13) }
-    },
-    15: {
-    title: "Rebirth Upgrade 15!",
-    description: "Points boost Rebirth!",
-    cost: new Decimal(3000),
-    effect() { return player.points.add(1).pow(0.1).min(100) },
-    effectDisplay() { return "x" + format(upgradeEffect("r", 15)) },
-    unlocked() { return hasUpgrade("r", 14) }
-    },
-    21: {
-    title: "Rebirth Upgrade 21!",
-    description: "x3 Points!",
-    cost: new Decimal(12500),
-    effect() { return new Decimal(3) },
-    unlocked() { return hasUpgrade("r", 15) }
-    },
-    22: {
-    title: "Rebirth Upgrade 22!",
-    description: "x^1.25 Rebirth Points!",
-    cost: new Decimal(100000),
-    effect() { return new Decimal(1.25) },
-    unlocked() { return hasUpgrade("r", 21) }
-    },
-    23: {
-    title: "Rebirth Upgrade 23!",
-    description: "x^1.05 Points!",
-    cost: new Decimal(5e7),
-    effect() { return new Decimal(1.05) },
-    unlocked() { return hasUpgrade("r", 22) }
-    },
-    24: {
-    title: "Rebirth Upgrade 24!",
-    description: "Rebirth boost itself!",
-    cost: new Decimal(1e9),
-    effect() {return player.r.points.add(1).pow(0.085).min(1e100)},
-    effectDisplay() {return "x" + format(this.effect())},
-    unlocked() { return hasUpgrade("r", 23) }
-    },
-    25: {
-    title: "Rebirth Upgrade 25!",
-    description: "Unlock new Layer!<br>and<br>x3 Rebirth!",
-    cost: new Decimal(1e14),
-    effect() { return new Decimal(3) },
-    unlocked() { return hasUpgrade("r", 24) },
-    },
-
-
-
-},
-
-
-
-    gainMult() { // Calculate the multiplier for main currency from bonuses
-        let mult = new Decimal(1)
-        mult = mult.times(new Decimal(1).add(player.p.points.times(0.05)))
-        if (hasMilestone("p", 0)) {mult = mult.mul(4)}
-        if (hasMilestone("m", 0)) {mult = mult.mul(100)}
-        if (hasUpgrade("r", 12)) mult = mult.times(upgradeEffect("r", 12))
-        if (hasUpgrade("r", 14)) mult = mult.times(upgradeEffect("r", 14))
-        if (hasUpgrade("r", 15)) mult = mult.times(upgradeEffect("r", 15))
-        if (hasUpgrade("r", 24)) mult = mult.times(upgradeEffect("r", 24))
-        if (hasUpgrade("r", 25)) mult = mult.times(upgradeEffect("r", 25))
-        if (hasUpgrade("p", 11)) mult = mult.times(upgradeEffect("p", 11))
-        if (hasUpgrade("p", 14)) mult = mult.times(upgradeEffect("p", 14))
-
-
-
-
-        if (inChallenge("p", 11)) {return new Decimal(0)}
-        if (inChallenge("p", 12)) {mult = mult.pow(0.8)}
-
-
-        return mult
-    },
-    gainExp() { // Calculate the exponent on main currency from bonuses
-        let exp = new Decimal(1)
-        if (hasUpgrade("r", 22)) exp = exp.mul(upgradeEffect("r", 22))
-        if (hasMilestone("p", 6)) exp = exp.mul(1.075)
-
-        return exp
-    },
-    row: 0, // Row the layer is in on the tree (0 is the first row)
-    hotkeys: [
-        {key: "r", description: "R: Reset for Rebirth Points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    ],
-    layerShown(){return true}
-}),
-addLayer("p", {
-    name: "Prestige", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "P", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 1, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    effect(){return new Decimal(1).add(player.p.points.times(0.08))},
-    effectDescription(){return "which boost rebirth gain by x" + format(tmp.p.effect) + "";},
-    
-    startData() { return {
-        unlocked: true,
-		points: new Decimal(0),
-        
-    }},
-    color: "#008854",
-    branches: ["r"],
-    requires: new Decimal(1e15), // Can be a function that takes requirement increases into account
-    resource: "Prestige points", // Name of prestige currency
-    baseResource: "Rebirth points", // Name of resource prestige is based on
-    baseAmount() {return player.r.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.06, // Prestige currency exponent
-
-
-    tabFormat: {
-    "Upgrades": {
-        content: [
-            "main-display",
-            "prestige-button",
-            ["display-text", () => `You have ${format(player.r.points)} Rebirth points`],
-            "blank",
-            "upgrades",
-        ]
-    },
-    "Milestones": {
-           content: [
-            "main-display",
-            "prestige-button",
-            ["display-text", () => `You have ${format(player.r.points)} Rebirth points`],
-            "blank",
-            "milestones",
-        ]
-    },
-    "Challenges":{
-            unlocked() {return hasUpgrade("p", 15)},
-            content: [
-            "main-display",
-            "challenges",
-        ]
-    },
-    },
-
-    microtabs: {
-    stuff:{
-        "Upgrades": {
-        Upgrades: {
-            content: ["upgrades"]
-        }},
-        "Milestones": {
-            content: ["milestones"]
-        },
-        "Challenges": {
-            content: ["challenges"]
-    }}},
-
     milestones: {
         0: {
-            requirementDescription: "1 Prestige",
-            effectDescription: "x4 Rebirth points! ",
-            done() { return player.p.points.gte(1) }
+            requirementDescription: "1 Tier",
+            effectDescription: "x3 Point Gain!",
+            done() {return player.t.points.gte(1)}
         },
         1: {
-            requirementDescription: "5 Prestige",
-            effectDescription: "x5 Points!",
-            done() { return player.p.points.gte(5) }
+            requirementDescription: "2 Tier",
+            effectDescription: "x3⭢x5 Points!<br>Unlock New Layer!(Need 100 Points!)",
+            done() {return player.t.points.gte(2)},
         },
         2: {
-            requirementDescription: "20 Prestige",
-            effectDescription: "x2.5 Prestige Points!",
-            done() { return player.p.points.gte(20) }
+            requirementDescription: "3 Tier",
+            effectDescription: "x5⭢x25 Points!<br>x1⭢x2.5 Energy!<br>More energy upg!<br>Unlock Rune Layer(WIP)",
+            done() {return player.t.points.gte(3)},
         },
         3: {
-            requirementDescription: "100 Prestige",
-            effectDescription: "Unlock Prestige Upgrades!",
-            done() { return player.p.points.gte(100) }
+            requirementDescription: "4 Tier",
+            effectDescription: "Soon?",
+            done() {return player.t.points.gte(4)},
         },
-        4: {
-            requirementDescription: "10,000,000 Prestige",
-            effectDescription: "%100 Rebirth Gain!",
-            done() { return player.p.points.gte(1e7) },
-            unlocked() {return hasChallenge("p", 11)}
-        },
-        5: {
-            requirementDescription: "1e9 Prestige",
-            effectDescription: "x^1.075 Rebirth Gain!",
-            done() { return player.p.points.gte(1e9) },
-            unlocked() { return hasMilestone("p", 5) }
-        },
-
-
-
-    },
-
-    challenges: {
-    11: {
-        name: "Challenges I",
-        // Nerf Name
-        challengeDescription() {return "No Rebirth Points gain."},
-        // 🎯 GOAL
-        goalDescription: "Reach 10,000 Points",
-        // 🎁 REWARD
-        rewardDescription: "Unlocks next row Prestige Upgrades and More milestones",
-        // Challenge'a girince reset
-        onEnter() {player.points = new Decimal(0)
-        player.r.points = new Decimal(0)},
-        // Bitirme şartı
-        done() {return player.points.gte(new Decimal(10000))},
-        
-        canComplete() {return player.points.gte(new Decimal(10000))},
-    },
-    12: {
-        name: "Challenges II",
-        // Nerf Name
-        challengeDescription() {return "Nerf: ^0.25 Points, ^0.8 Rebirth"},
-        // 🎯 GOAL
-        goalDescription: "Reach 1e11 Points",
-        // 🎁 REWARD
-        rewardDescription: "Unlock New layer(Soon) and x10 Prestige Gain!",
-        // Challenge'a girince reset
-        onEnter() {player.points = new Decimal(0)
-        player.r.points = new Decimal(0)},
-        // Bitirme şartı
-        done() {return player.points.gte(new Decimal(1e11))},
-        canComplete() {return player.points.gte(new Decimal(1e11))},
-        unlocked() { return hasUpgrade("p", 25) },
-    },
-    },
-
-    upgrades: {
-    11: {
-    title: "Prestige Upgrade 11!",
-    description: "x3 All Stats!",
-    cost: new Decimal(100),
-    effect() { return new Decimal(3) },
-    unlocked() {return hasMilestone("p", 3)}
-    },
-    12: {
-    title: "Prestige Upgrade 12!",
-    description: "Points boost little Prestige!",
-    cost: new Decimal(200),
-    effect() { return player.points.add(1).pow(0.008).min(100) },
-    effectDisplay() { return "x" + format(upgradeEffect("p", 12)) },
-    unlocked() {return player.p.points.gte(200) || hasUpgrade("p", 12)}
-    //unlocked() {return hasMilestone("p", 4)}
-    },
-    13: {
-    title: "Prestige Upgrade 13!",
-    description: "Keep Rebirth Upgrades!",
-    cost: new Decimal(1000),
-    unlocked() {return player.p.points.gte(1000) || hasUpgrade("p", 13)}
-    },
-    14: {
-    title: "Prestige Upgrade 14!",
-    description: "x1e5 Rebirth Points!",
-    cost: new Decimal(2500),
-    effect() { return new Decimal(1e5) },
-    unlocked() {return player.p.points.gte(2500) || hasUpgrade("p", 14)}
-    }, 
-    15: {
-    title: "Prestige Upgrade 15!",
-    description: "Unlock Challenges!",
-    cost: new Decimal(1e6),
-    unlocked() {return player.p.points.gte(1e6) || hasUpgrade("p", 15)}
-    },
-    21: {
-    title: "Prestige Upgrade 21!",
-    description: "Prestige boost Points!",
-    cost: new Decimal(2e6),
-    effect() {
-        let p = player.p.points
-        let linear = new Decimal(0.000025)
-        let base = new Decimal(1).add(p.mul(linear))
-        if (base.gt(1.25e4)) base = new Decimal(1.25e4)
-        return base
-    },
-    effectDisplay() { return "x" + format(upgradeEffect("p", 21)) },
-    unlocked() {return hasChallenge("p", 11)}
-    },
-    22: {
-    title: "Prestige Upgrade 22!",
-    description: "x7.5 Prestige Gain!",
-    cost: new Decimal(1.5e7),
-    effect() { return new Decimal(7.5) },
-    unlocked() {return player.p.points.gte(1.5e7) || hasUpgrade("p", 22)}
-    },
-    23: {
-    title: "Prestige Upgrade 23!",
-    description: "x^1.025 Prestige Gain!",
-    cost: new Decimal(8e8),
-    effect() { return new Decimal(1.025) },
-    unlocked() {return player.p.points.gte(8e8) || hasUpgrade("p", 23)}
-    },
-    24: {
-    title: "Prestige Upgrade 24!",
-    description: "Prestige boost itself!",
-    cost: new Decimal(1.5e10),
-    effect() {return player.p.points.add(1).pow(0.05).min(1e100)},
-    effectDisplay() {return "x" + format(this.effect())},
-    unlocked() {return player.p.points.gte(1.5e10) || hasUpgrade("p", 24)}
-    },
-    25: {
-    title: "Prestige Upgrade 25!",
-    description: "Unlock 2th Challenges!",
-    cost: new Decimal(1e11),
-    unlocked() {return player.p.points.gte(1e11) || hasUpgrade("p", 25)}
     },
 
 
-
-    },
-
-
-    gainMult() { // Calculate the multiplier for main currency from bonuses
-        let mult = new Decimal(1)
-        if (hasMilestone("p", 3)) {mult = mult.mul(2.5)}
-        if (hasMilestone("m", 0)) {mult = mult.mul(2.5)}
-        if (hasUpgrade("p", 11)) mult = mult.times(upgradeEffect("p", 11))
-        if (hasUpgrade("p", 12)) mult = mult.times(upgradeEffect("p", 12))
-        if (hasUpgrade("p", 22)) mult = mult.times(upgradeEffect("p", 22))
-        if (hasUpgrade("p", 24)) mult = mult.times(upgradeEffect("p", 24))
-        if (hasChallenge("p", 12)) {mult = mult.mul(10)}
-
-        return mult
-    },
-    gainExp() { // Calculate the exponent on main currency from bonuses
-        let exp = new Decimal(1)
-        if (hasUpgrade("p", 23)) exp = exp.mul(upgradeEffect("p", 23))
-
-
-        return exp
-    },
-    canGain() {
-    if (inChallenge("p", 11)) return false
-    
-    return true
-    },
-    row: 1, // Row the layer is in on the tree (0 is the first row)
+    row: 0, // Row the layer is in on the tree (0 is the first row)
     hotkeys: [
-        {key: "p", description: "P: Reset for Prestige Points", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+        {key: "t", description: "T: Reset for Tier Up", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
     ],
-    layerShown(){return hasUpgrade("r", 25) || player[this.layer].unlocked}
-}),
-addLayer("m", {
-    name: "Mega", // This is optional, only used in a few places, If absent it just uses the layer id.
-    symbol: "M", // This appears on the layer's node. Default is the id with the first letter capitalized
-    position: 2, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
-    effect(){return new Decimal(1).add(player.m.points.times(0.25))},
-    effectDescription(){return "which boost prestige gain by x" + format(tmp.m.effect) + "";},
-    
+    layerShown(){return true}
+    }),
+addLayer("e", {
+    name: "Energy", // This is optional, only used in a few places, If absent it just uses the layer id.
+    symbol: "E", // This appears on the layer's node. Default is the id with the first letter capitalized
+    position: 0, // Horizontal position within a row. By default it uses the layer id and sorts in alphabetical order
     startData() { return {
         unlocked: true,
 		points: new Decimal(0),
-        
     }},
-    color: "#db0025",
-    branches: ["p"],
-    requires: new Decimal(Infinity), //5e11 // Can be a function that takes requirement increases into account
-    resource: "Mega points", // Name of prestige currency
-    baseResource: "Prestige points", // Name of resource prestige is based on
-    baseAmount() {return player.p.points}, // Get the current amount of baseResource
-    type: "normal", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
-    exponent: 0.2, // Prestige currency exponent
+    color: "rgb(255, 233, 34)",
+    requires: new Decimal(100), // Can be a function that takes requirement increases into account
+    resource: "Energy", // Name of prestige currency
+    baseResource: "points", // Name of resource prestige is based on
+    baseAmount() {return player.points}, // Get the current amount of baseResource
+    type: "none", // normal: cost to gain currency depends on amount gained. static: cost depends on how much you already have
+    exponent: 0, // Prestige currency exponent
+    branches: ["t"],
 
-    tabFormat: {
-    "Upgrades": {
-        content: [
-            "main-display",
-            "prestige-button",
-            ["display-text", () => `You have ${format(player.p.points)} Prestige points`],
-            "blank",
-            "upgrades",
-        ]
-    },
-    "Milestones": {
-           content: [
-            "main-display",
-            "prestige-button",
-            ["display-text", () => `You have ${format(player.p.points)} Prestige points`],
-            "blank",
-            "milestones",
-        ]
-    },
+    
 
-
-
-},
-
-    microtabs: {
-    stuff:{
-        "Upgrades": {
-        Upgrades: {
-            content: ["upgrades"]
-        }},
-        "Milestones": {
-            content: ["milestones"]
+    upgrades:{
+        11: {
+        title: "First Upg!",
+        description: "+1 Base Energy",
+        cost: new Decimal(25),
+        //effect() { return new Decimal(1) },
         },
-        "Challenges": {
-            content: ["challenges"]
-    }}},
+        12: {
+        title: "Useless points?",
+        description: "x2.5 Points",
+        cost: new Decimal(75),
+        //effect() { return new Decimal(1) },
+        unlocked() { return hasUpgrade("e", 11) }
+        },
+        13: {
+        title: "Need more energy!",
+        description: "x3 Energy",
+        cost: new Decimal(150),
+        //effect() { return new Decimal(3) },
+        unlocked() { return hasUpgrade("e", 12) }
+        },
+        14: {
+        title: "More boost more funny!",
+        description: "Points boost energy gain!",
+        cost: new Decimal(1000),
+        effect() {
+            return player.points.add(1).pow(0.1777).min(100)},
+            effectDisplay() { return "x" + format(this.effect()) },
+        unlocked() { return hasUpgrade("e", 13) }
+        },
+        15: {
+        title: "Go new tier!",
+        description: "Energy boost points gain!<br>Max:x50",
+        cost: new Decimal(10000),
+        effect() { 
+            return player.e.points.add(1).pow(0.355).min(50);},
+            effectDisplay() { return "x" + format(this.effect()) },
+        unlocked() { return hasUpgrade("e", 14) }
+        },
+        21: {
+        title: "More more!!!",
+        description: "x5 Energy",
+        cost: new Decimal(1e5),
+        //effect() { return new Decimal(3) },
+        unlocked() { return hasMilestone("t", 2) }
+        },
+        22: {
+        title: "What what is Rune?",
+        description: "x5 Rune Shard Gain!(WIP)<br>Special:x2.5 Energy!",
+        cost: new Decimal(2.5e6),
+        //effect() { return new Decimal(3) },
+        unlocked() { return hasUpgrade("e", 21) }
+        },
+        23: {
+        title: "More Useless!",
+        description: "x3.33 Points Gain!",
+        cost: new Decimal(33333333),
+        //effect() { return new Decimal(3) },
+        unlocked() { return hasUpgrade("e", 22) }
+        },
+        24: {
+        title: "Coming Soon!",
+        description: "I'm working rune layer.<br>More Coming very soon!",
+        cost: new Decimal(Infinity),
+        //effect() { return new Decimal(3) },
+        unlocked() { return hasUpgrade("e", 23) }
+        },
 
-    milestones: {
-        0: {
-            requirementDescription: "1 Mega Points",
-            effectDescription: "x100 Rebirth, x2.5 Prestige Gain",
-            done() { return player.m.points.gte(1) }
-        },
-        1: {
-            requirementDescription: "4 Mega Points",
-            effectDescription: "Keep Rebirth Layer",
-            done() { return player.m.points.gte(4) },
-            unlocked() { return hasMilestone("m", 0) }
-        },
-    
+
+
     },
-    
-    
-    
-    
-    upgrades: {
-    11: {
-    title: "Mega Upgrade 11!",
-    description: "xInfinity All Stats!",
-    cost: new Decimal(1e9),
-    effect() { return new Decimal(100) },
-    unlocked(){return false}
-    }},
 
+
+    
+    
     gainMult() { // Calculate the multiplier for main currency from bonuses
-        let mult = new Decimal(1)
-        
-
+        mult = new Decimal(1)
         return mult
     },
+    
     gainExp() { // Calculate the exponent on main currency from bonuses
-        let exp = new Decimal(1)
-        
-
-
-        return exp
+        return new Decimal(1)
     },
-    canGain() {
     
-    
-    return true
+    row: 1, // Row the layer is in on the tree (0 is the first row)
+    hotkeys: [
+        {key: "e", description: "E: Reset for Energy", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
+    ],
+    layerShown() { return player.t.points.gte(2);},
+    update(diff) {
+        // 1. Kilit Açma Şartı: Oyuncu hayatında bir kez Tier 2 ve 100 Point'e ulaştıysa katman görünür kalır
+        if (player.t.points.gte(2) && player.points.gte(100)) {
+            player.e.unlocked = true;
+        }
+
+        // 2. ÜRETİM ŞARTI (HER AN KONTROL EDİLİR): 
+        // Oyuncu Tier 2 veya üstündeyse VE anlık Point miktarı 100 veya üzerindeyse...
+        if (player.t.points.gte(2) && player.points.gte(100)) {
+            let energyGainPerSecond = new Decimal(1); // Saniyede 1 Energy
+            if (hasUpgrade("e", 11)) {energyGainPerSecond = energyGainPerSecond.add(1);}
+
+            
+            let energyMultiplier = new Decimal(1); // Başlangıç çarpanı: 1
+            if (hasUpgrade("e", 13)) { energyMultiplier = energyMultiplier.mul(3);}
+            if (hasUpgrade("e", 14)) { let boostEffect = upgradeEffect("e", 14); energyMultiplier = energyMultiplier.mul(boostEffect);}
+            if (player.t.points.gte(3)) {energyMultiplier = energyMultiplier.mul(2.5);}
+            if (hasUpgrade("e", 21)) { energyMultiplier = energyMultiplier.mul(5);}
+            if (hasUpgrade("e", 22)) { energyMultiplier = energyMultiplier.mul(2.5);} //Rune after delete!
+
+            // Üretimi ekle
+            let totalGain = energyGainPerSecond.mul(energyMultiplier);
+            player.e.points = player.e.points.add(totalGain.mul(diff));
+        } else {
+            // Eğer üstteki şart sağlanmıyorsa (Örn: Point 100'ün altına düştüyse)
+            // Hiçbir şey yapma, üretim otomatik olarak durur (0 kazanım).
+        }
     },
-    row: 2, // Row the layer is in on the tree (0 is the first row)
-    //hotkeys: [
-        //{key: "e", description: "?: Reset for ?", onPress(){if (canReset(this.layer)) doReset(this.layer)}},
-    //],
-    layerShown(){return false}
-    //layerShown(){return hasChallenge("p", 12) || player[this.layer].unlocked}
 })

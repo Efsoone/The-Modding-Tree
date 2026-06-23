@@ -1,28 +1,28 @@
 let modInfo = {
-	name: "The Reborn Tree",
+	name: "The Reborn Incremental Tree",
 	author: "Efsoone",
 	pointsName: "points",
 	modFiles: ["layers.js", "tree.js"],
 
 	discordName: "",
 	discordLink: "",
-	initialStartPoints: new Decimal (1), // Used for hard resets and new players
+	initialStartPoints: new Decimal (0), // Used for hard resets and new players
 	offlineLimit: 1,  // In hours
 }
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.0.5b",
-	name: "First Era!",
+	num: "0.1",
+	name: "Nothing",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
-		- Two new layer!<br>
-			<br>
-	<h3>v0.0.5</h3><br>
-		- Mini Update!<br>
-
+		- Nothing!<br>
+	<h3>v0.1</h3><br>
+		- Three new layer!<br>
+		- Rune Layer?(WIP)<br>
+		- Endgame:(WIP)
 		`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -45,18 +45,14 @@ function getPointGen() {
 	if(!canGenPoints())
 		return new Decimal(0)
 		let gain = new Decimal(1)
-		if (hasMilestone("p", 2)) {gain = gain.mul(5)}
-		if (hasUpgrade("r", 11)) gain = gain.times(upgradeEffect("r", 11))
-		if (hasUpgrade("r", 13)) gain = gain.times(upgradeEffect("r", 13))
-		if (hasUpgrade("r", 21)) gain = gain.times(upgradeEffect("r", 21))
-		if (hasUpgrade("p", 11)) gain = gain.times(upgradeEffect("p", 11))
-		if (hasUpgrade("p", 21)) gain = gain.times(upgradeEffect("p", 21))
+		if (hasMilestone('t', 1)) {gain = gain.mul(5)}
+		else if (hasMilestone('t', 0)) {gain = gain.mul(3)}
+		if (hasMilestone('t', 2)) {gain = gain.mul(5)}
+		if (hasUpgrade('e', 12)) {gain = gain.mul(2.5)}
+		if (hasUpgrade("e", 15)) {gain = gain.mul(upgradeEffect("e", 15));}
+		if (hasUpgrade('e', 23)) {gain = gain.mul(3.33)}
 
 
-		if (hasUpgrade("r", 23)) gain = gain.pow(1.05)
-		
-
-		if (inChallenge("p", 12)) {gain = gain.pow(0.25)}
 
 
 	return gain
@@ -75,6 +71,12 @@ function isEndgame() {
 	return player.points.gte(new Decimal("1.8e308"))
 }
 
+function getGameSpeed() {
+    let speed = new Decimal(1)
+
+    
+    return speed
+}
 
 
 // Less important things beyond this point!
