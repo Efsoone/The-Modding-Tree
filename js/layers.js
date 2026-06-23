@@ -150,16 +150,19 @@ addLayer("t", {
             requirementDescription: "2 Tier",
             effectDescription: "x3⭢x5 Points!<br>Unlock New Layer!(Need 100 Points!)",
             done() {return player.t.points.gte(2)},
+            unlocked() {return hasMilestone("t", 0)},
         },
         2: {
             requirementDescription: "3 Tier",
             effectDescription: "x5⭢x25 Points!<br>x1⭢x2.5 Energy!<br>More energy upg!<br>Unlock Rune Layer(WIP)",
             done() {return player.t.points.gte(3)},
+            unlocked() {return hasMilestone("t", 1)},
         },
         3: {
             requirementDescription: "4 Tier",
             effectDescription: "Soon?",
             done() {return player.t.points.gte(4)},
+            unlocked() {return hasMilestone("t", 2)},
         },
     },
 
