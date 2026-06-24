@@ -13,16 +13,18 @@ let modInfo = {
 // Set your version in num and name
 let VERSION = {
 	num: "0.1",
-	name: "Nothing",
+	name: "Nothing!",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
 	<h3>v0.0</h3><br>
 		- Nothing!<br>
+			<br>
 	<h3>v0.1</h3><br>
 		- Three new layer!<br>
-		- Rune Layer?(WIP)<br>
-		- Endgame:(WIP)
+		- Rune Layer?<br>
+				<br>
+	<h3>Endgame: 1e9 Points!</h3>
 		`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -50,8 +52,20 @@ function getPointGen() {
 		if (hasMilestone('t', 2)) {gain = gain.mul(5)}
 		if (hasUpgrade('e', 12)) {gain = gain.mul(2.5)}
 		if (hasUpgrade("e", 15)) {gain = gain.mul(upgradeEffect("e", 15));}
-		if (hasUpgrade('e', 23)) {gain = gain.mul(3.33)}
+		if (hasUpgrade('e', 23)) {gain = gain.mul(5.55)}
+		if (hasUpgrade('e', 24)) {gain = gain.mul(upgradeEffect('e', 24));}
+		if (hasUpgrade("e", 25)) {gain = gain.mul(upgradeEffect("e", 25));}
 
+
+
+		if (player.r.unlocked) {
+        // Common Rune Boost: miktar * 0.004 + 1
+        let commonBoost = player.r.commonRunes.mul(0.004).add(1);
+        gain = gain.mul(commonBoost);
+
+        // Rare Rune Points Boost: miktar * 0.02 + 1
+        let rarePointsBoost = player.r.rareRunes.mul(0.02).add(1);
+        gain = gain.mul(rarePointsBoost);}
 
 
 
