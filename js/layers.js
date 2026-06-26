@@ -506,11 +506,7 @@ addLayer("e", {
     exponent: 0, // Prestige currency exponent
     branches: ["t"],
     
-    autoUpgrade() {
-        // Eğer oyuncu Tier 5 veya üstüyse Enerji upgrade'lerini otomatik AL!
-        if (player.tier && player.tier.gte(5)) return true;
-        return true;
-    },
+    
     
 
     upgrades:{
@@ -689,7 +685,15 @@ addLayer("e", {
             // Eğer üstteki şart sağlanmıyorsa (Örn: Point 100'ün altına düştüyse)
             // Hiçbir şey yapma, üretim otomatik olarak durur (0 kazanım).
         }
-        
+        if (player.t && player.t.points && player.t.points.gte(5)) {
+        for (let upg of Object.keys(layers.e.upgrades)) {
+            // Eğer upgrade listede geçerli bir sayıysa, henüz satın alınmadıysa ve bütçe yetiyorsa otomatik buyUpgrade tetikler
+            if (!isNaN(upg) && !hasUpgrade('e', upg)) {
+                buyUpgrade('e', upg);
+            }
+        }
+    }
+
     },
 })
 addLayer("q", {
