@@ -831,8 +831,7 @@ addLayer("q", {
         cost: new Decimal(1e8),
         //effect() { return new Decimal(1) },
         unlocked() {
-        return hasUpgrade("e", 32) || player.q?.best.gt(0) || player.quantum?.best.gt(0);}
-        //unlocked() {return hasUpgrade("e", 32) }
+        return hasUpgrade("e", 32) || player.q?.unlocked || player.quantum?.unlocked;}
         },
         32: {
         title: "",
