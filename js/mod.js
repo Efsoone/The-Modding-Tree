@@ -12,8 +12,8 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1",
-	name: "Nothing!",
+	num: "0.2 Part1",
+	name: "Huge Update!",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
@@ -24,7 +24,18 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Three new layer!<br>
 		- Rune Layer?<br>
 				<br>
-	<h3>Endgame: 1e9 Points!</h3>
+	<h3>Endgame: 1e9 Points!</h3><br>
+	<h3>v0.2 Part1</h3><br>
+		- More new tier!<br>
+		- More Layer!<br>
+		- Changed Energy Upg!<br>
+		- Generator broken Fixed!<br>
+		- RuneButton Fixed!<br>
+		- Part2 Coming Soon!<br>
+				<br>
+	<h3>Endgame: 1e17 Points!</h3>
+	
+
 		`
 
 let winText = `Congratulations! You have reached the end and beaten this game, but for now...`
@@ -50,13 +61,22 @@ function getPointGen() {
 		if (hasMilestone('t', 1)) {gain = gain.mul(5)}
 		else if (hasMilestone('t', 0)) {gain = gain.mul(3)}
 		if (hasMilestone('t', 2)) {gain = gain.mul(5)}
+		if (hasMilestone('t', 3)) {gain = gain.mul(20)}
 		if (hasUpgrade('e', 12)) {gain = gain.mul(2.5)}
 		if (hasUpgrade("e", 15)) {gain = gain.mul(upgradeEffect("e", 15));}
 		if (hasUpgrade('e', 23)) {gain = gain.mul(5.55)}
 		if (hasUpgrade('e', 24)) {gain = gain.mul(upgradeEffect('e', 24));}
 		if (hasUpgrade("e", 25)) {gain = gain.mul(upgradeEffect("e", 25));}
+		if (hasUpgrade('q', 13)) {gain = gain.mul(7.5)}
+		if (hasUpgrade("q", 15)) {gain = gain.mul(upgradeEffect("q", 15));}
+		if (hasMilestone('p', 1)) {gain = gain.mul(4)}
+		if (hasMilestone('p', 4)) {gain = gain.mul(3.5)}
+		if (hasMilestone('p', 6)) {gain = gain.mul(4.5)}
+		if (hasUpgrade('q', 25)) {gain = gain.mul(20)}
 
 
+
+		if (hasMilestone('p', 2)) {gain = gain.pow(1.005);}
 
 		if (player.r.unlocked) {
         // Common Rune Boost: miktar * 0.004 + 1
@@ -66,6 +86,10 @@ function getPointGen() {
         // Rare Rune Points Boost: miktar * 0.02 + 1
         let rarePointsBoost = player.r.rareRunes.mul(0.02).add(1);
         gain = gain.mul(rarePointsBoost);}
+		
+		if ((player.tier && player.tier.gte(5)) || (player.t && player.t.points && player.t.points.gte(5))) {
+    	let epicPointsBoost = player.r.epicRunes.mul(0.05).add(1);
+    	gain = gain.mul(epicPointsBoost);}
 
 
 
