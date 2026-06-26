@@ -25,6 +25,7 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Rune Layer?<br>
 				<br>
 	<h3>Endgame: 1e9 Points!</h3><br>
+				<br>
 	<h3>v0.2 Part1</h3><br>
 		- More new tier!<br>
 		- More Layer!<br>
