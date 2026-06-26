@@ -830,8 +830,7 @@ addLayer("q", {
         description: "x15 Energy gain!",
         cost: new Decimal(1e8),
         //effect() { return new Decimal(1) },
-        unlocked() {
-        return hasUpgrade("e", 32) || (player.q !== undefined);}
+        unlocked() { return hasUpgrade("e", 32) }
         },
         32: {
         title: "",
