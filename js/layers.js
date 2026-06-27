@@ -383,51 +383,45 @@ addLayer("t", {
     },
 
     onPrestige(layer) {
-    // 1. Enerji katmanının ve ana puanların düzgün çalışan reset motoru
+    // 1. Ana puanları sıfırla
     player.points = new Decimal(0);
     
-    if (player.e) {
-        player.e.points = new Decimal(0);
-        player.e.upgrades = [];
-    }
-
-    // 2. Kuantum ve Plazma Katmanları Sıfırlama Motoru (Hata Korumalı)
+    // 2. Kuantum ve Üst Katmanlar Sıfırlama Motoru (Hata Korumalı)
     try {
         let tPoints = new Decimal(0);
         if (player.t && player.t.points) tPoints = player.t.points;
         else if (player.tier && player.tier.points) tPoints = player.tier.points;
 
-        // Eğer oyuncu Tier 5 veya üzerindeyse zincirleme sıfırlamayı başlat
-        if (tPoints.gte(5)) {
-            // --- KUANTUM TEMİZLİĞİ ---
-            if (player.q) {
-                player.q.points = new Decimal(0);
-                player.q.best = new Decimal(0);
-                player.q.upgrades = [];
-            }
-            if (player.quantum) {
-                player.quantum.points = new Decimal(0);
-                player.quantum.best = new Decimal(0);
-                player.quantum.upgrades = [];
+        // TMT'nin prestij anındaki matematik sırasına göre:
+        // Oyuncu 4. Tier'deyken butona bastığında tPoints tam olarak 4'tür.
+        if (tPoints.gte(4)) {
+            
+            // --- ENERJİ KATMANINI KÖKTEN SIFIRLA ---
+            if (player.e) {
+                layerDataReset("e");
+                player.e.hasE32Ever = false; // Önceki adımlarda eklediğimiz kilit bayrağı
             }
 
-            // --- PLAZMA VE PLAZMA MILESTONE TEMİZLİĞİ (NEW) ---
-            if (player.p) {
-                player.p.points = new Decimal(0);      // Plazma puanlarını sıfırla
-                player.p.best = new Decimal(0);        // En yüksek ulaşılan plazmayı sıfırla
-                player.p.milestones = [];              // Plazma milestone'larını jilet gibi temizle
-                player.p.upgrades = [];                // Eğer varsa plazma upgrade'lerini temizle
-            }
-            if (player.plasma) { // Eğer ID 'plasma' ise burası da koruma sağlar
-                player.plasma.points = new Decimal(0);
-                player.plasma.best = new Decimal(0);
-                player.plasma.milestones = [];
-                player.plasma.upgrades = [];
+            // --- KUANTUM TEMİZLİĞİ (TMT Güvenli Yöntem) ---
+            if (player.q) layerDataReset("q");
+            if (player.quantum) layerDataReset("quantum");
+
+            // --- PLAZMA TEMİZLİĞİ (TMT Güvenli Yöntem) ---
+            if (player.p) layerDataReset("p");
+            if (player.plasma) layerDataReset("plasma");
+            
+        } else {
+            // Eğer oyuncu 4. Tier'den daha düşükse (Örn: 1->2, 2->3, 3->4 geçişleri)
+            // Sadece enerji katmanının standart temizliğini yap (Kuantum/Plazma elleme)
+            if (player.e) {
+                player.e.points = new Decimal(0);
+                player.e.upgrades = [];
             }
         }
     } catch(err) {
         console.log("Sifirlama esnasinda bir hata oluştu ama oyun devam ediyor: ", err);
     }
+
 
     
 

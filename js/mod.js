@@ -12,7 +12,7 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.2 Part1",
+	num: "0.2a Part1",
 	name: "Huge Update!",
 }
 
@@ -33,6 +33,8 @@ let changelog = `<h1>Changelog:</h1><br>
 		- Generator broken Fixed!<br>
 		- RuneButton Fixed!<br>
 		- Part2 Coming Soon!<br>
+				<br>
+		- v0.2a: Tier Bug Fixed!<br>
 				<br>
 	<h3>Endgame: 1e17 Points!</h3>
 	
