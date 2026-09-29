@@ -17,7 +17,12 @@ addNode("blank", {
 
 
 addLayer("tree-tab", {
-    tabFormat: [["tree", function() {return (layoutInfo.treeLayout ? layoutInfo.treeLayout : TREE_LAYERS)}]],
+    tabFormat:[
+      "main-display",
+        ["display-text", function() {
+return "<div style='margin-top: -73px; margin-bottom: 73px; font-size: 17px; color: #ffffff;'>Event: x1.5 Rune Luck, x1.25 Rune Speed!</div>"
+        }],
+    ["tree", function() {return (layoutInfo.treeLayout ? layoutInfo.treeLayout : TREE_LAYERS)}]],
     previousTab: "",
     leftTab: true,
 })
