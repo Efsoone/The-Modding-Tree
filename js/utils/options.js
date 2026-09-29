@@ -15,6 +15,7 @@ function getStartOptions() {
 		oldStyle: false,
 		forceTooltips: true,
 		hideMilestonePopups: false,
+		notation: "standard", // Notation seçeneği varsayılan eklendi
 	}
 }
 
@@ -22,19 +23,34 @@ function toggleOpt(name) {
 	if (name == "oldStyle" && styleCooldown > 0)
 		return;
 
+	// Notation toggle mantığı
+	if (name == "notation") {
+		options.notation = options.notation === "scientific" ? "standard" : "scientific";
+		if (player) player.notation = options.notation;
+		return;
+	}
+
 	options[name] = !options[name];
 	if (name == "hqTree")
 		changeTreeQuality();
 	if (name == "oldStyle")
 		updateStyle();
 }
+
+// Sayfa yüklendiğinde notation varsayılanı tanımla
+if (options.notation === undefined) {
+    options.notation = "standard";
+}
+
 var styleCooldown = 0;
+
 function updateStyle() {
 	styleCooldown = 1;
 	let css = document.getElementById("styleStuff");
 	css.href = options.oldStyle ? "oldStyle.css" : "style.css";
 	needCanvasUpdate = true;
 }
+
 function changeTreeQuality() {
 	var on = options.hqTree;
 	document.body.style.setProperty('--hqProperty1', on ? "2px solid" : "4px solid");
@@ -42,18 +58,19 @@ function changeTreeQuality() {
 	document.body.style.setProperty('--hqProperty2b', on ? "0px 0px 20px var(--background)" : "");
 	document.body.style.setProperty('--hqProperty3', on ? "2px 2px 4px rgba(0, 0, 0, 0.25)" : "none");
 }
+
 function toggleAuto(toggle) {
 	Vue.set(player[toggle[0]], [toggle[1]], !player[toggle[0]][toggle[1]]);
-	needCanvasUpdate=true
+	needCanvasUpdate = true;
 }
 
 const MS_DISPLAYS = ["ALL", "LAST, AUTO, INCOMPLETE", "AUTOMATION, INCOMPLETE", "INCOMPLETE", "NONE"];
-
 const MS_SETTINGS = ["always", "last", "automation", "incomplete", "never"];
 
 function adjustMSDisp() {
 	options.msDisplay = MS_SETTINGS[(MS_SETTINGS.indexOf(options.msDisplay) + 1) % 5];
 }
+
 function milestoneShown(layer, id) {
 	complete = player[layer].milestones.includes(id);
 	auto = layers[layer].milestones[id].toggles;
@@ -61,21 +78,17 @@ function milestoneShown(layer, id) {
 	switch (options.msDisplay) {
 		case "always":
 			return true;
-			break;
 		case "last":
 			return (auto) || !complete || player[layer].lastMilestone === id;
-			break;
 		case "automation":
 			return (auto) || !complete;
-			break;
 		case "incomplete":
 			return !complete;
-			break;
 		case "never":
 			return false;
-			break;
 	}
 	return false;
 }
 
-let formatOption = (opt) => opt ? 'ON' : 'OFF'
+let formatOption = (opt) => opt ? 'ON' : 'OFF';
+

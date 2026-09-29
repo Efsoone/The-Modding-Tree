@@ -109,3 +109,66 @@ function invertOOM(x){
 
     return x
 }
+const STANDARD_SUFFIXES = [
+    "", "M", "B", "T", "Qa", "Qi", "Sx", "Sp", "Oc", "No", "Dc", 
+    "Ud", "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", "Ocd", "Nod", "Vg"
+];
+
+function customFormat(decimal, precision = 2) {
+    if (decimal === undefined || decimal === null) return "0";
+    let num = new Decimal(decimal);
+
+    if (num.sign < 0) return "-" + customFormat(num.neg(), precision);
+    if (num.eq(0)) return "0";
+
+    // 1,000,000'dan küçük sayılar (K yok, virgüllü biçim: 999,999)
+    if (num.lt(1e6)) {
+        let val = num.toNumber();
+        return val % 1 === 0 
+            ? val.toLocaleString('en-US') 
+            : val.toLocaleString('en-US', { minimumFractionDigits: precision, maximumFractionDigits: precision });
+    }
+
+    // Aktif notation değerini bul (options veya player üzerinden)
+    let currentNotation = (typeof options !== 'undefined' && options.notation) 
+        ? options.notation 
+        : ((typeof player !== 'undefined' && player.notation) ? player.notation : 'standard');
+
+    // 1. SCIENTIFIC MODU (Örn: 1.25e6, 1.67e9)
+    if (currentNotation === "scientific") {
+        let exponent = num.log10().floor().toNumber();
+        let mantissa = num.div(Decimal.pow(10, exponent)).toNumber();
+        return mantissa.toFixed(precision) + "e" + exponent;
+    }
+
+    // 2. STANDARD MODU (Örn: 1.25M, 1.67B)
+    let exponent = num.log10().floor().toNumber();
+    let suffixIndex = Math.floor(exponent / 3) - 1; // 1e6 -> M (Index 1)
+
+    if (suffixIndex < STANDARD_SUFFIXES.length) {
+        let scaled = num.div(Decimal.pow(10, (suffixIndex + 1) * 3));
+        return scaled.toFixed(precision) + STANDARD_SUFFIXES[suffixIndex];
+    } else {
+        // Harf sınırını aşarsa otomatik Scientific gösterim
+        let mantissa = num.div(Decimal.pow(10, exponent)).toNumber();
+        return mantissa.toFixed(precision) + "e" + exponent;
+    }
+}
+
+// Global TMT format fonksiyonları
+window.format = function(decimal, precision = 2) {
+    return customFormat(decimal, precision);
+};
+
+// Tam sayılar için çağrılan formatWhole:
+// 1M altındakiler için virgülsüz tam sayı, 1M ve üzeri için 2 basamak ondalıklı gösterir.
+window.formatWhole = function(decimal) {
+    if (decimal === undefined || decimal === null) return "0";
+    let num = new Decimal(decimal);
+
+    if (num.gte(1e6)) {
+        return customFormat(num, 2);
+    }
+    return customFormat(num, 0);
+};
+
