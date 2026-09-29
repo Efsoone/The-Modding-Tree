@@ -248,4 +248,9 @@ button > * {
 	background-image: none !important;
 	--background: transparent !important;
 }
+.achievement {
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
 
