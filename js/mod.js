@@ -1,5 +1,5 @@
 let modInfo = {
-	name: "The Rune Incrememtal",
+	name: "The Rune Incremental",
 	author: "Efsoone",
 	pointsName: "skills",
 	modFiles: ["layers.js", "tree.js"],
@@ -12,17 +12,25 @@ let modInfo = {
 
 // Set your version in num and name
 let VERSION = {
-	num: "0.1.1",
+	num: "0.1.2",
 	name: "Full Released!",
 }
 
 let changelog = `<h1>Changelog:</h1><br>
+  <h3>v0.1.2</h3><br>
+    - Game little easy!<br>
+    - Optimization for a few gui!<br>
+    - <h3>Fixed RP layer!</h3><br>
+    - Fixed bugs!<br>
+          <br>
   <h3>v0.1.1</h3><br>
     - Added FAQ infobox!<br>
     - Fixed Rune Stats tab!<br>
+          <br>
   <h3>v0.1</h3><br>
     - Released the game!<br>
     - Fixed more stuff!<br>
+          <br>
 	<h3>v0.0</h3><br>
 		- Added things.<br>
 		- Added stuff.`

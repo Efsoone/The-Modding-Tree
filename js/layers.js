@@ -18,28 +18,38 @@ addLayer("rp", {
     baseAmount() { return player.points },
     requires: new Decimal(10),
     type: "normal",
-    exponent: 0.5,
+    exponent: 0.01,
 
-    
+    getResetGain() {
+    if (player.points.lt(10)) return new Decimal(0);
+    let gain = player.points.div(10).pow(this.exponent);
+    return gain.max(1);
+    },
     layerShown() { 
     return player.points.gte(8) || player.rp.activated 
     },
     canReset() { 
-    return !player.rp.activated && player.points.gte(10) 
+    return player.points.gte(10) 
     },
     onPrestige(gain) {
-        let resetGain = layers.rp.getResetGain();
+    // 1. Sıfırlanmaması gereken toplam istatistikleri yedekle
+    let keepTotal = player.r.totalRolls;
+    let keepNoBulk = player.r.totalRollsNoBulk;
 
-        player.rp.points = player.rp.points.add(resetGain);
-        player.rp.total = player.rp.total.add(resetGain);
+    // 2. Layer'ı sıfırla
+    if (layers.r) layerDataReset("r");
 
-        // Prestij anında elde edilen ilk kazancı Best RP olarak kaydeder
-        if (resetGain.gt(player.rp.best)) {
-            player.rp.best = resetGain;
-        }
+    // 3. Toplam verileri geri yükle
+    player.r.totalRolls = keepTotal;
+    player.r.totalRollsNoBulk = keepNoBulk;
 
-        player.rp.activated = true;
+    // RP katmanı işlemleri
+    player.rp.best = new Decimal(1);
+    player.rp.total = new Decimal(1);
+    player.rp.activated = true;
     },
+
+
 
 
     // Prestij yapıldıktan sonra saniyede +1 RP pasif üretimi başlatır
@@ -85,7 +95,7 @@ addLayer("rp", {
             cost: new Decimal(50),
             unlocked() { return true },
             effect() {
-            return player.r.points.add(1).pow(0.1);
+            return player.r.points.add(1).pow(0.132).min(50);
             },
             effectDisplay() { return format(this.effect()) + "x" }
         },
@@ -101,7 +111,7 @@ addLayer("rp", {
         },
         13: {
             title: "You are very faster!",
-            description: "x1.25 Rune Speed!",
+            description: "x1.5 Rune Speed!",
             cost: new Decimal(2500),
             unlocked() {return hasUpgrade('rp', 12)},
         },
@@ -121,7 +131,7 @@ addLayer("rp", {
             cost: new Decimal(3e5),
             unlocked() {return hasMilestone('rp', 0)},
             effect() {
-            return player.rp.points.add(1).pow(0.0257).min(2.5);
+            return player.rp.points.add(1).pow(0.0257).min(2);
             },
             effectDisplay() { return format(this.effect()) + "x" }
         },
@@ -141,7 +151,7 @@ addLayer("rp", {
             cost: new Decimal(2.5e7),
             unlocked() {return hasMilestone('rp', 1)},
             effect() {
-            return player.points.add(1).pow(0.75).min(1000);
+            return player.points.add(1).pow(0.75).min(77);
             },
             effectDisplay() { return format(this.effect()) + "x" }
         },
@@ -169,8 +179,8 @@ addLayer("rp", {
             unlocked() { return hasMilestone('rp', 0) },
         },
         2: {
-            requirementDescription: "5,000,000,000 Total Runic Power!",
-            done() { return player.rp.total.gte(5e9) },
+            requirementDescription: "2,500,000,000 Total Runic Power!",
+            done() { return player.rp.total.gte(2.5e9) },
             effectDescription: "Unlock New Rune in Basic Rune Tab!",
             unlocked() { return hasMilestone('rp', 1) },
         },
@@ -208,7 +218,7 @@ addLayer("rp", {
         return `<span style='color: #e9e9e9; font-weight: bold; font-size: 14px;'>(+${format(gainPerSec)} Runic Power/sec)</span>`;
     }],
     "blank",
-    () => (layers.rp.passiveGen().lte(0) ? "prestige-button" : "blank"),
+    () => (!player.rp.activated ? "prestige-button" : "blank"),
     "blank",
     ["microtabs", "stuff", { "border": "none"}]
     ] 

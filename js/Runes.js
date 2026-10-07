@@ -43,11 +43,11 @@ addLayer("r", {
     if (amount.lte(0)) return new Decimal(1);
     let rpFactor = player.r.runes.common.div(25000).times(0.01);
     let rpBoost = new Decimal(1).add(rpFactor);
-    return Decimal.min(new Decimal(3), rpBoost);
+    return Decimal.min(new Decimal(4), rpBoost);
     },
     getUncommonBoost() {
         let amount = new Decimal(player.r.runes.uncommon || 0);
-        return amount.lte(0) ? new Decimal(1) : Decimal.min(new Decimal(3), new Decimal(1).add(amount.times(0.05)));
+        return amount.lte(0) ? new Decimal(1) : Decimal.min(new Decimal(4), new Decimal(1).add(amount.times(0.05)));
     },
     getRareShardBoost() {
         let amount = new Decimal(player.r.runes.rare || 0);
@@ -55,8 +55,13 @@ addLayer("r", {
     },
     getRareBulkBoost() {
         let count = new Decimal(player.r.runes.rare || 0).toNumber();
-        if (count >= 150) return 5;
-        if (count >= 50) return 4;
+        if (count >= 1250) return 10;
+        if (count >= 800) return 9;
+        if (count >= 500) return 8;
+        if (count >= 350) return 7;
+        if (count >= 200) return 6;
+        if (count >= 100) return 5;
+        if (count >= 40) return 4;
         if (count >= 15) return 3;
         if (count >= 5) return 2;
         if (count >= 1) return 1;
@@ -72,7 +77,7 @@ addLayer("r", {
     },
     getEpicBulkBoost() {
     let amount = new Decimal(player.r.runes.epic || 0);
-    return amount.lte(0) ? new Decimal(1) : Decimal.min(new Decimal(2.0), new Decimal(1.05).add(amount.sub(1).mul(0.05)));
+    return amount.lte(0) ? new Decimal(1) : Decimal.min(new Decimal(3.0), new Decimal(1.05).add(amount.sub(1).mul(0.05)));
     },
     getLegendaryShardBoost() {
     let amount = new Decimal(player.r.runes.legendary || 0);
@@ -198,7 +203,7 @@ addLayer("r", {
 
 
         if (hasUpgrade("rp", 13)) {
-        let boost = layers.rp.upgrades[13].effect ? layers.rp.upgrades[13].effect() : new Decimal(1.25);
+        let boost = layers.rp.upgrades[13].effect ? layers.rp.upgrades[13].effect() : new Decimal(1.5);
         speed = speed.div(boost);
         }
         speed = Decimal.max(0.1, speed);
@@ -235,7 +240,9 @@ addLayer("r", {
         let legendaryChance = Math.min(0.10, (1 / 2500) * currentLuck);
         let mythicChance = Math.min(0.10, (1 / 50000) * currentLuck);
         let divineChance = Math.min(0.10, (1 / 5e6) * currentLuck);
-        let secretChance = Math.min(0.10, (1 / 1.25e9) * currentLuck);
+
+        let hasSecretUnlocked = hasMilestone("rp", 2); 
+        let secretChance = hasSecretUnlocked ? Math.min(0.10, (1 / 2e9) * currentLuck) : 0;
       
         if (actualRolls.lte(1e6)) {
             let count = actualRolls.toNumber();
@@ -304,7 +311,7 @@ addLayer("r", {
                 <div style="display:flex;flex-direction:column;justify-content:center;align-items:center;width:100%;height:100%;position:relative;overflow:hidden;padding:0;margin:0;user-select:none;">
                     <div style="font-size:14px;font-weight:bold;color:#e0e0e0;">Roll Rune (+${formatWhole(rollsToDisplay)})</div>
                     <div style="font-size:10px;color:${costColor};font-weight:bold;margin-top:3px;">Cost: ${format(this.cost())} Shards</div>
-                    <div style="font-size:9px;color:#888;margin-top:4px;">Speed: ${s.speed.toFixed(1)}s | Bulk: +${formatWhole(s.bulk)}</div>
+                    <div style="font-size:9px;color:#888;margin-top:4px;">Speed: ${s.speed.toFixed(2)}s | Bulk: +${formatWhole(s.bulk)}</div>
                     <div style="position:absolute;bottom:0;left:0;height:3px;width:${progress}%;background-color:#14b8a6;"></div>
                 </div>`;
             },
@@ -356,13 +363,13 @@ addLayer("r", {
     let cRPBoostHTML = "";
     if (hasMilestone("rp", 0) && cAmt.gt(0)) {
     let rpBoost = layers.r.getCommonRPBoost();
-    cRPBoostHTML = `<div style="margin-top:-38px;padding:0;line-height:1.2;"><span style="color:#10b981;font-size:11px;font-weight:bold;">x${rpBoost.toFixed(2)} RP${rpBoost.gte(3) ? ' (MAX)' : ''}</span></div>`;
+    cRPBoostHTML = `<div style="margin-top:-38px;padding:0;line-height:1.2;"><span style="color:#10b981;font-size:11px;font-weight:bold;">x${rpBoost.toFixed(2)} RP${rpBoost.gte(4) ? ' (MAX)' : ''}</span></div>`;
     }
                         // Uncommon HTML
       let ucAmt = new Decimal(player.r.runes.uncommon || 0);
       let ucBoost = layers.r.getUncommonBoost();
       let ucBoostHTML = ucAmt.gt(0)
-    ? `<span style="color:#14b8a6;font-size:11px;font-weight:bold;">x${ucBoost.toFixed(2)} Rune Shards${ucBoost.gte(3) ? ' (MAX)' : ''}</span>`
+    ? `<span style="color:#14b8a6;font-size:11px;font-weight:bold;">x${ucBoost.toFixed(2)} Rune Shards${ucBoost.gte(4) ? ' (MAX)' : ''}</span>`
     : `<span style="color:#666;font-size:11px;font-style:italic;">Discover to unlock!</span>`;
 
                           // Rare HTML
@@ -372,7 +379,7 @@ addLayer("r", {
       let rBoostHTML = rAmt.gt(0)
     ? `<div style="font-size:10px;line-height:1.3;">
     <div><span style="color:#14b8a6;font-weight:bold;">x${rSBoost.toFixed(2)} Rune Shards${rSBoost.gte(7) ? ' (MAX)' : ''}</span></div>
-    <div style="margin-top:3px;"><span style="color:#1c73f1;font-weight:bold;">+${formatWhole(rBBoost)} Rune Bulk${rBBoost >= 5 ? ' (MAX)' : ''}</span></div>
+    <div style="margin-top:3px;"><span style="color:#1c73f1;font-weight:bold;">+${formatWhole(rBBoost)} Rune Bulk${rBBoost >= 10 ? ' (MAX)' : ''}</span></div>
                                </div>`
     : `<span style="color:#666;font-size:11px;font-style:italic;">Discover to unlock!</span>`;
 
@@ -387,7 +394,7 @@ addLayer("r", {
     <div><span style="color:#14b8a6;font-weight:bold;">x${eSBoost.toFixed(2)} Rune Shards${eSBoost.gte(5) ? ' (MAX)' : ''}</span></div>
     <div style="margin-top:3px;"><span style="color:#4caf50;font-weight:bold;">x${eLBoost.toFixed(2)}
     Rune Luck${eLBoost.gte(2.5) ? ' (MAX)' : ''}</span></div>
-    <div style="margin-top:3px;"><span style="color:#1c73f1;font-weight:bold;">x${eBBoost.toFixed(2)} Rune Bulk${eBBoost.gte(2.0) ? ' (MAX)' : ''}</span></div>
+    <div style="margin-top:3px;"><span style="color:#1c73f1;font-weight:bold;">x${eBBoost.toFixed(2)} Rune Bulk${eBBoost.gte(3.0) ? ' (MAX)' : ''}</span></div>
                                </div>`
     : `<div style="display:flex;align-items:center;justify-content:center;height:100%;width:100%;color:#666;font-size:11px;font-style:italic;text-align:center;">Discover to unlock!</div>`;
 
@@ -451,7 +458,7 @@ let sSkBoost = layers.r.getSecretSkillsBoost();
 let sLBoost = layers.r.getSecretLuckBoost();
 let sBBoost = layers.r.getSecretBulkBoost();
 
-let rawSecretChance = Math.min(0.10, (1 / 1.25e9) * layers.r.getStats().luck.toNumber());
+let rawSecretChance = Math.min(0.10, (1 / 2e9) * layers.r.getStats().luck.toNumber());
 let secretRatioText = rawSecretChance >= 0.10 ? "1 / 10" : "1 / " + formatWhole(Math.round(1 / rawSecretChance));
 
 let sBoostHTML = sAmt.gt(0)

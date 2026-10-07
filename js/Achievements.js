@@ -44,7 +44,7 @@ addLayer("a", {
       14: {
         name: "Need Faster!",
         done() { return player.r.totalRollsBulk.gte(1e5) },
-        tooltip: "Open total 100,000 Runes!<br>Reward: 7 AP, x1.75 Rune Luck;",
+        tooltip: "Open total 100,000 Runes!<br>Reward: 7 AP, x1.75 Rune Luck!",
         reward: 7,
       },
       15: {
@@ -103,10 +103,10 @@ addLayer("a", {
     
 
     infoboxes: {
-        faqInfo: {
+        faqInfo1: {
             title: "How to play the game?",
             body() {
-                return "Welcome to my game! This is an <b>RNG-based incremental game</b>.<br><br>To get started, head over to the <b style='color: #14b8a6;'>Runes (R)</b> layer and hit <b style='color: #ffffff;'>Rune Roll</b> to unlock your first runes. Use them to collect <b style='color: #14b8a6;'>Rune Shards</b>, boost your <b style='color: #ffffff;'>Skills</b>, and scale your progress.<br><br>Good luck and have fun!"
+                return "Welcome to game! This is an <b>RNG-based incremental game</b>.<br><br>To get started, head over to the <b style='color: #14b8a6;'>Runes (R)</b> layer and hit <b style='color: #ffffff;'>Rune Roll</b> to unlock your first runes. Use them to collect <b style='color: #14b8a6;'>Rune Shards</b>, boost your <b style='color: #ffffff;'>Skills</b>, and scale your progress.<br><br>Good luck and have fun!"
             }
         }
     },
@@ -153,7 +153,7 @@ addLayer("a", {
           "FAQ": {
           content: [
             "blank",
-            ["infobox", "faqInfo"]
+            ["infobox", "faqInfo1"]
           ]
         }
       }
